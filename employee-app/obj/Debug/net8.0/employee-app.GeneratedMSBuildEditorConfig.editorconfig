@@ -26,10 +26,6 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/jakubkindracki/RiderProjects/employee-app/employee-app/Pages/Counter.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvQ291bnRlci5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
 [/Users/jakubkindracki/RiderProjects/employee-app/employee-app/Pages/Home.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvSG9tZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -48,10 +44,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/Users/jakubkindracki/RiderProjects/employee-app/employee-app/Pages/Vehicles.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXMvVmVoaWNsZXMucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = 
-
-[/Users/jakubkindracki/RiderProjects/employee-app/employee-app/Pages/Weather.razor]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXMvV2VhdGhlci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/jakubkindracki/RiderProjects/employee-app/employee-app/_Imports.razor]

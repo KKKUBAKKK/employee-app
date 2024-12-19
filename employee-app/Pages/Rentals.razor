@@ -1,483 +1,476 @@
-@page "/returns"
+@page "/rentals"
 @* @attribute [Authorize] *@
 
 <div class="page-header">
-    <h1>Vehicle Returns</h1>
+    <h1>Active Rentals</h1>
     <div class="header-actions">
-        <button class="scan-button">
-            <i class="fas fa-qr-code"></i> Scan QR Code
+        <button class="header-btn new-rental">
+            <i class="fas fa-plus"></i> New Rental
+        </button>
+        <button class="header-btn export">
+            <i class="fas fa-file-export"></i> Export
         </button>
     </div>
 </div>
 
-<div class="returns-container">
-    <div class="pending-returns card">
-        <h2>Pending Returns Today</h2>
-        <div class="returns-list">
-            @foreach (var rental in pendingReturns)
-            {
-                <div class="return-item @(selectedReturn?.Id == rental.Id ? "selected" : "")" 
-                     @onclick="() => SelectReturn(rental)">
-                    <div class="return-time">
-                        <span class="time">@rental.ExpectedTime.ToString("HH:mm")</span>
-                        <span class="@GetStatusClass(rental.Status)">@rental.Status</span>
-                    </div>
-                    <div class="return-info">
-                        <h3>@rental.VehicleModel</h3>
-                        <p class="plate">@rental.LicensePlate</p>
-                        <p class="customer">@rental.CustomerName</p>
-                    </div>
-                    <i class="fas fa-chevron-right"></i>
-                </div>
-            }
+<div class="rental-dashboard">
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-icon active">
+                <i class="fas fa-key"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Active Rentals</h3>
+                <p class="stat-value">@activeRentals.Count</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon overdue">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Overdue</h3>
+                <p class="stat-value">@activeRentals.Count(r => r.Status == "Overdue")</p>
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-icon returning">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3>Due Today</h3>
+                <p class="stat-value">@activeRentals.Count(r => r.Status == "Due Today")</p>
+            </div>
         </div>
     </div>
 
-    <div class="return-process card @(selectedReturn == null ? "empty" : "")">
-        @if (selectedReturn == null)
-        {
-            <div class="empty-state">
-                <i class="fas fa-car fa-3x"></i>
-                <h3>Select a Return</h3>
-                <p>Choose a pending return from the list to begin processing</p>
-            </div>
-        }
-        else
-        {
-            <div class="return-header">
-                <div class="vehicle-details">
-                    <h2>@selectedReturn.VehicleModel</h2>
-                    <p class="plate">@selectedReturn.LicensePlate</p>
+    <div class="main-content">
+        <div class="filters-bar">
+            <div class="search-section">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search by customer, plate number, or rental ID..." />
                 </div>
-                <button class="close-btn" @onclick="ClearSelection">
-                    <i class="fas fa-times"></i>
+            </div>
+            
+            <div class="filter-section">
+                <select class="filter-select">
+                    <option value="">All Statuses</option>
+                    <option value="active">Active</option>
+                    <option value="overdue">Overdue</option>
+                    <option value="due-today">Due Today</option>
+                </select>
+                
+                <select class="filter-select">
+                    <option value="">All Locations</option>
+                    <option value="main">Main Office</option>
+                    <option value="downtown">Downtown</option>
+                    <option value="airport">Airport</option>
+                </select>
+                
+                <button class="filter-btn">
+                    <i class="fas fa-sliders-h"></i>
+                    More Filters
                 </button>
             </div>
+        </div>
 
-            <div class="return-form">
-                <EditForm Model="@returnForm" OnValidSubmit="HandleSubmit">
-                    <div class="form-section">
-                        <h3>Vehicle Condition</h3>
-                        
-                        <div class="condition-grid">
-                            <div class="condition-item">
-                                <label>Fuel Level</label>
-                                <InputNumber @bind-Value="returnForm.FuelLevel" class="form-control" />
-                                <span class="unit">%</span>
-                            </div>
-                            
-                            <div class="condition-item">
-                                <label>Mileage</label>
-                                <InputNumber @bind-Value="returnForm.Mileage" class="form-control" />
-                                <span class="unit">km</span>
-                            </div>
-                            
-                            <div class="condition-item">
-                                <label>Exterior Cleanliness</label>
-                                <InputSelect @bind-Value="returnForm.ExteriorCondition" class="form-control">
-                                    <option value="Clean">Clean</option>
-                                    <option value="Minor Dirt">Minor Dirt</option>
-                                    <option value="Needs Cleaning">Needs Cleaning</option>
-                                </InputSelect>
-                            </div>
-                            
-                            <div class="condition-item">
-                                <label>Interior Cleanliness</label>
-                                <InputSelect @bind-Value="returnForm.InteriorCondition" class="form-control">
-                                    <option value="Clean">Clean</option>
-                                    <option value="Minor Dirt">Minor Dirt</option>
-                                    <option value="Needs Cleaning">Needs Cleaning</option>
-                                </InputSelect>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h3>Damage Inspection</h3>
-                        <div class="photo-upload-grid">
-                            <div class="photo-upload">
-                                <label>Front View</label>
-                                @* <div class="upload-area @(frontPhotoUploaded ? "has-image" : "")"  *@
-                                @*     $1$  @onclick="() => UploadPhoto('front')"> #1# *@
-                                @*     $1$ @if (frontPhotoUploaded) #1# *@
-                                @*     $1$ { #1# *@
-                                @*     $1$     <img src="/api/placeholder/150/150" alt="Front view" /> #1# *@
-                                @*     $1$     <button class="remove-photo" @onclick:stopPropagation="true" #1# *@
-                                @*     $1$             @onclick="() => RemovePhoto('front')"> #1# *@
-                                @*     $1$         <i class="fas fa-times"></i> #1# *@
-                                @*     $1$     </button> #1# *@
-                                @*     $1$ } #1# *@
-                                @*     $1$ else #1# *@
-                                @*     $1$ { #1# *@
-                                @*     $1$     <i class="fas fa-camera"></i> #1# *@
-                                @*     $1$     <span>Add Photo</span> #1# *@
-                                @*     $1$ } #1# *@
-                                @* </div> *@
-                            </div>
-
-                            <div class="photo-upload">
-                                <label>Right Side</label>
-                                <div class="upload-area">
-                                    <i class="fas fa-camera"></i>
-                                    <span>Add Photo</span>
+        <div class="rentals-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" class="select-all" />
+                        </th>
+                        <th>Vehicle & Customer</th>
+                        <th>Rental Period</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var rental in activeRentals)
+                    {
+                        <tr>
+                            <td>
+                                <input type="checkbox" />
+                            </td>
+                            <td>
+                                <div class="rental-info">
+                                    <img src="@rental.VehicleImage" alt="@rental.VehicleModel" />
+                                    <div>
+                                        <div class="vehicle-info">
+                                            <span class="model">@rental.VehicleModel</span>
+                                            <span class="plate">@rental.LicensePlate</span>
+                                        </div>
+                                        <div class="customer-info">
+                                            <span class="name">@rental.CustomerName</span>
+                                            <span class="phone">@rental.CustomerPhone</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="photo-upload">
-                                <label>Left Side</label>
-                                <div class="upload-area">
-                                    <i class="fas fa-camera"></i>
-                                    <span>Add Photo</span>
+                            </td>
+                            <td>
+                                <div class="rental-period">
+                                    <div class="date-range">
+                                        <span>@rental.StartDate.ToShortDateString()</span>
+                                        <i class="fas fa-arrow-right"></i>
+                                        <span>@rental.EndDate.ToShortDateString()</span>
+                                    </div>
+                                    <div class="duration">@rental.Duration days</div>
                                 </div>
-                            </div>
-
-                            <div class="photo-upload">
-                                <label>Back View</label>
-                                <div class="upload-area">
-                                    <i class="fas fa-camera"></i>
-                                    <span>Add Photo</span>
+                            </td>
+                            <td>
+                                <div class="location-info">
+                                    <span class="location">@rental.Location</span>
                                 </div>
-                            </div>
-                        </div>
+                            </td>
+                            <td>
+                                <span class="status-badge @rental.Status.ToLower()">@rental.Status</span>
+                            </td>
+                            <td>
+                                <div class="payment-info">
+                                    <span class="amount">$@rental.Amount</span>
+                                    <span class="payment-status @rental.PaymentStatus.ToLower()">
+                                        @rental.PaymentStatus
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="actions">
+                                    <button class="action-btn" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="action-btn" title="Edit Rental">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="action-btn" title="Process Return">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-                        <div class="damage-notes">
-                            <label>Damage Notes</label>
-                            <InputTextArea @bind-Value="returnForm.DamageNotes" 
-                                         placeholder="Describe any new damage or issues..."
-                                         rows="4" 
-                                         class="form-control" />
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="secondary-btn" @onclick="ClearSelection">
-                            Cancel
-                        </button>
-                        <button type="submit" class="primary-btn">
-                            Complete Return
-                        </button>
-                    </div>
-                </EditForm>
-            </div>
-        }
+        <div class="pagination">
+            <button class="page-btn" disabled>
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <span class="page-separator">...</span>
+            <button class="page-btn">12</button>
+            <button class="page-btn">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
     </div>
 </div>
 
 @code {
-    private List<RentalReturn> pendingReturns = new()
+    private List<RentalData> activeRentals = new()
     {
-        new RentalReturn 
-        { 
-            Id = 1,
+        new RentalData
+        {
             VehicleModel = "Toyota Camry",
             LicensePlate = "ABC-123",
             CustomerName = "John Smith",
-            ExpectedTime = DateTime.Now.AddHours(1),
-            Status = "On Time"
+            CustomerPhone = "(555) 123-4567",
+            StartDate = DateTime.Now.AddDays(-5),
+            EndDate = DateTime.Now.AddDays(2),
+            Duration = 7,
+            Location = "Main Office",
+            Status = "Active",
+            Amount = 350.00m,
+            PaymentStatus = "Paid",
+            VehicleImage = "/api/placeholder/60/60"
         },
-        new RentalReturn 
-        { 
-            Id = 2,
+        new RentalData
+        {
             VehicleModel = "Honda Civic",
             LicensePlate = "XYZ-789",
             CustomerName = "Jane Doe",
-            ExpectedTime = DateTime.Now.AddMinutes(-30),
-            Status = "Delayed"
+            CustomerPhone = "(555) 987-6543",
+            StartDate = DateTime.Now.AddDays(-3),
+            EndDate = DateTime.Now.AddDays(-1),
+            Duration = 2,
+            Location = "Downtown",
+            Status = "Overdue",
+            Amount = 150.00m,
+            PaymentStatus = "Pending",
+            VehicleImage = "/api/placeholder/60/60"
         },
-        // Add more sample returns
+        // Add more sample rentals as needed
     };
 
-    private RentalReturn selectedReturn;
-    private ReturnForm returnForm = new();
-    private bool frontPhotoUploaded;
-
-    private void SelectReturn(RentalReturn rental)
+    public class RentalData
     {
-        selectedReturn = rental;
-        returnForm = new ReturnForm(); // Reset form
-    }
-
-    private void ClearSelection()
-    {
-        selectedReturn = null;
-        returnForm = new ReturnForm();
-    }
-
-    private void UploadPhoto(string position)
-    {
-        // In a real app, this would open a file picker
-        if (position == "front")
-            frontPhotoUploaded = true;
-    }
-
-    private void RemovePhoto(string position)
-    {
-        if (position == "front")
-            frontPhotoUploaded = false;
-    }
-
-    private async Task HandleSubmit()
-    {
-        // Process return logic here
-        await Task.Delay(1000); // Simulate API call
-        ClearSelection();
-    }
-
-    private string GetStatusClass(string status) =>
-        status switch
-        {
-            "Delayed" => "status-delayed",
-            "On Time" => "status-ontime",
-            _ => "status-regular"
-        };
-
-    public class RentalReturn
-    {
-        public int Id { get; set; }
         public string VehicleModel { get; set; }
         public string LicensePlate { get; set; }
         public string CustomerName { get; set; }
-        public DateTime ExpectedTime { get; set; }
+        public string CustomerPhone { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int Duration { get; set; }
+        public string Location { get; set; }
         public string Status { get; set; }
-    }
-
-    public class ReturnForm
-    {
-        public int FuelLevel { get; set; }
-        public int Mileage { get; set; }
-        public string ExteriorCondition { get; set; } = "Clean";
-        public string InteriorCondition { get; set; } = "Clean";
-        public string DamageNotes { get; set; }
+        public decimal Amount { get; set; }
+        public string PaymentStatus { get; set; }
+        public string VehicleImage { get; set; }
     }
 }
 
 <style>
-    .returns-container {
-        display: grid;
-        grid-template-columns: 300px 1fr;
-        gap: 1.5rem;
-        height: calc(100vh - 180px);
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
     }
 
-    .card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        padding: 1.5rem;
-        height: 100%;
+    .header-actions {
+        display: flex;
+        gap: 1rem;
     }
 
-    .scan-button {
-        background-color: #3498db;
-        color: white;
-        border: none;
+    .header-btn {
         padding: 0.75rem 1.5rem;
         border-radius: 4px;
+        border: none;
         cursor: pointer;
         display: flex;
         align-items: center;
         gap: 0.5rem;
     }
 
-    .returns-list {
-        margin-top: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-        overflow-y: auto;
-        max-height: calc(100% - 3rem);
+    .header-btn.new-rental {
+        background-color: #2ecc71;
+        color: white;
     }
 
-    .return-item {
-        padding: 1rem;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        transition: all 0.2s;
+    .header-btn.export {
+        background-color: #3498db;
+        color: white;
     }
 
-    .return-item:hover {
-        background-color: #f8f9fa;
-    }
-
-    .return-item.selected {
-        border-color: #3498db;
-        background-color: #ebf8ff;
-    }
-
-    .return-time {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        min-width: 80px;
-    }
-
-    .time {
-        font-size: 1.125rem;
-        font-weight: 500;
-    }
-
-    .status-delayed { color: #e74c3c; }
-    .status-ontime { color: #2ecc71; }
-
-    .return-info {
-        flex: 1;
-    }
-
-    .return-info h3 {
-        margin: 0;
-        font-size: 1rem;
-    }
-
-    .plate {
-        color: #7f8c8d;
-        font-size: 0.875rem;
-        margin: 0.25rem 0;
-    }
-
-    .customer {
-        font-size: 0.875rem;
-        margin: 0;
-    }
-
-    .empty-state {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: #a0aec0;
-        text-align: center;
-    }
-
-    .return-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: start;
-        margin-bottom: 2rem;
-    }
-
-    .close-btn {
-        background: none;
-        border: none;
-        color: #64748b;
-        cursor: pointer;
-        padding: 0.5rem;
-    }
-
-    .form-section {
-        margin-bottom: 2rem;
-    }
-
-    .form-section h3 {
-        margin-bottom: 1rem;
-        color: #2d3748;
-    }
-
-    .condition-grid {
+    .stats-cards {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
         gap: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .condition-item {
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-icon.active { background-color: #e8f8f5; color: #2ecc71; }
+    .stat-icon.overdue { background-color: #fdedec; color: #e74c3c; }
+    .stat-icon.returning { background-color: #eaf2f8; color: #3498db; }
+
+    .stat-content h3 {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .main-content {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .filters-bar {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .search-box {
         position: relative;
+        width: 300px;
     }
 
-    .unit {
+    .search-box i {
         position: absolute;
-        right: 1rem;
+        left: 1rem;
         top: 50%;
         transform: translateY(-50%);
         color: #64748b;
     }
 
-    .form-control {
+    .search-box input {
         width: 100%;
-        padding: 0.75rem;
-        border: 1px solid #ddd;
+        padding: 0.75rem 1rem 0.75rem 2.5rem;
+        border: 1px solid #e2e8f0;
         border-radius: 4px;
-        font-size: 1rem;
     }
 
-    .photo-upload-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    .filter-section {
+        display: flex;
         gap: 1rem;
-        margin-bottom: 1rem;
     }
 
-    .upload-area {
-        width: 100%;
-        aspect-ratio: 1;
-        border: 2px dashed #ddd;
+    .filter-select {
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
         border-radius: 4px;
+        min-width: 150px;
+    }
+
+    .filter-btn {
+        padding: 0.75rem 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 4px;
+        background: white;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    }
+
+    .rentals-table {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 1rem;
+        background-color: #f8fafc;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .rental-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .rental-info img {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        object-fit: cover;
+    }
+
+    .vehicle-info, .customer-info {
         display: flex;
         flex-direction: column;
+    }
+
+    .model {
+        font-weight: 500;
+    }
+
+    .plate, .phone {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .rental-period {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .date-range {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .duration {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.875rem;
+    }
+
+    .status-badge.active { background-color: #e8f8f5; color: #2ecc71; }
+    .status-badge.overdue { background-color: #fdedec; color: #e74c3c; }
+    .status-badge.due { background-color: #fff3e0; color: #f39c12; }
+
+    .payment-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .amount {
+        font-weight: 500;
+    }
+
+    .payment-status {
+        font-size: 0.875rem;
+    }
+
+    .payment-status.paid { color: #2ecc71; }
+    .payment-status.pending { color: #f39c12; }
+
+    .actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 4px;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+        cursor: pointer;
+        display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        position: relative;
-    }
-
-    .upload-area:hover {
-        border-color: #3498db;
-        color: #3498db;
-    }
-
-    .upload-area.has-image {
-        border-style: solid;
-    }
-
-    .upload-area img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 4px;
-    }
-
-    .remove-photo {
-        position: absolute;
-        top: -0.5rem;
-        right: -0.5rem;
-        background: #e74c3c;
-        color: white;
-        border: none;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        cursor: pointer;
-    }
-
-    .damage-notes {
-        margin-top: 1rem;
-    }
-
-    .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 1rem;
-        margin-top: 2rem;
-    }
-
-    .primary-btn {
-        background-color: #3498db;
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    .secondary-btn {
-        background-color: white;
-        color: #64748b;
-        border: 1px solid #ddd;
-        padding: 0.75rem 1.5rem;
-        border-radius: 4px;
-        cursor: pointer;
     }
 </style>

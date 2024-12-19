@@ -1029,3 +1029,4 @@
 /Users/jakubkindracki/RiderProjects/employee-app/employee-app/obj/Debug/net8.0/refint/employee-app.dll
 /Users/jakubkindracki/RiderProjects/employee-app/employee-app/obj/Debug/net8.0/employee-app.pdb
 /Users/jakubkindracki/RiderProjects/employee-app/employee-app/obj/Debug/net8.0/ref/employee-app.dll
+/Users/jakubkindracki/RiderProjects/employee-app/employee-app/obj/Debug/net8.0/employee-app.sourcelink.json
