@@ -1,0 +1,483 @@
+@page "/returns"
+@* @attribute [Authorize] *@
+
+<div class="page-header">
+    <h1>Vehicle Returns</h1>
+    <div class="header-actions">
+        <button class="scan-button">
+            <i class="fas fa-qr-code"></i> Scan QR Code
+        </button>
+    </div>
+</div>
+
+<div class="returns-container">
+    <div class="pending-returns card">
+        <h2>Pending Returns Today</h2>
+        <div class="returns-list">
+            @foreach (var rental in pendingReturns)
+            {
+                <div class="return-item @(selectedReturn?.Id == rental.Id ? "selected" : "")" 
+                     @onclick="() => SelectReturn(rental)">
+                    <div class="return-time">
+                        <span class="time">@rental.ExpectedTime.ToString("HH:mm")</span>
+                        <span class="@GetStatusClass(rental.Status)">@rental.Status</span>
+                    </div>
+                    <div class="return-info">
+                        <h3>@rental.VehicleModel</h3>
+                        <p class="plate">@rental.LicensePlate</p>
+                        <p class="customer">@rental.CustomerName</p>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="return-process card @(selectedReturn == null ? "empty" : "")">
+        @if (selectedReturn == null)
+        {
+            <div class="empty-state">
+                <i class="fas fa-car fa-3x"></i>
+                <h3>Select a Return</h3>
+                <p>Choose a pending return from the list to begin processing</p>
+            </div>
+        }
+        else
+        {
+            <div class="return-header">
+                <div class="vehicle-details">
+                    <h2>@selectedReturn.VehicleModel</h2>
+                    <p class="plate">@selectedReturn.LicensePlate</p>
+                </div>
+                <button class="close-btn" @onclick="ClearSelection">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="return-form">
+                <EditForm Model="@returnForm" OnValidSubmit="HandleSubmit">
+                    <div class="form-section">
+                        <h3>Vehicle Condition</h3>
+                        
+                        <div class="condition-grid">
+                            <div class="condition-item">
+                                <label>Fuel Level</label>
+                                <InputNumber @bind-Value="returnForm.FuelLevel" class="form-control" />
+                                <span class="unit">%</span>
+                            </div>
+                            
+                            <div class="condition-item">
+                                <label>Mileage</label>
+                                <InputNumber @bind-Value="returnForm.Mileage" class="form-control" />
+                                <span class="unit">km</span>
+                            </div>
+                            
+                            <div class="condition-item">
+                                <label>Exterior Cleanliness</label>
+                                <InputSelect @bind-Value="returnForm.ExteriorCondition" class="form-control">
+                                    <option value="Clean">Clean</option>
+                                    <option value="Minor Dirt">Minor Dirt</option>
+                                    <option value="Needs Cleaning">Needs Cleaning</option>
+                                </InputSelect>
+                            </div>
+                            
+                            <div class="condition-item">
+                                <label>Interior Cleanliness</label>
+                                <InputSelect @bind-Value="returnForm.InteriorCondition" class="form-control">
+                                    <option value="Clean">Clean</option>
+                                    <option value="Minor Dirt">Minor Dirt</option>
+                                    <option value="Needs Cleaning">Needs Cleaning</option>
+                                </InputSelect>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>Damage Inspection</h3>
+                        <div class="photo-upload-grid">
+                            <div class="photo-upload">
+                                <label>Front View</label>
+                                @* <div class="upload-area @(frontPhotoUploaded ? "has-image" : "")"  *@
+                                @*     $1$  @onclick="() => UploadPhoto('front')"> #1# *@
+                                @*     $1$ @if (frontPhotoUploaded) #1# *@
+                                @*     $1$ { #1# *@
+                                @*     $1$     <img src="/api/placeholder/150/150" alt="Front view" /> #1# *@
+                                @*     $1$     <button class="remove-photo" @onclick:stopPropagation="true" #1# *@
+                                @*     $1$             @onclick="() => RemovePhoto('front')"> #1# *@
+                                @*     $1$         <i class="fas fa-times"></i> #1# *@
+                                @*     $1$     </button> #1# *@
+                                @*     $1$ } #1# *@
+                                @*     $1$ else #1# *@
+                                @*     $1$ { #1# *@
+                                @*     $1$     <i class="fas fa-camera"></i> #1# *@
+                                @*     $1$     <span>Add Photo</span> #1# *@
+                                @*     $1$ } #1# *@
+                                @* </div> *@
+                            </div>
+
+                            <div class="photo-upload">
+                                <label>Right Side</label>
+                                <div class="upload-area">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Add Photo</span>
+                                </div>
+                            </div>
+
+                            <div class="photo-upload">
+                                <label>Left Side</label>
+                                <div class="upload-area">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Add Photo</span>
+                                </div>
+                            </div>
+
+                            <div class="photo-upload">
+                                <label>Back View</label>
+                                <div class="upload-area">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Add Photo</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="damage-notes">
+                            <label>Damage Notes</label>
+                            <InputTextArea @bind-Value="returnForm.DamageNotes" 
+                                         placeholder="Describe any new damage or issues..."
+                                         rows="4" 
+                                         class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="secondary-btn" @onclick="ClearSelection">
+                            Cancel
+                        </button>
+                        <button type="submit" class="primary-btn">
+                            Complete Return
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<RentalReturn> pendingReturns = new()
+    {
+        new RentalReturn 
+        { 
+            Id = 1,
+            VehicleModel = "Toyota Camry",
+            LicensePlate = "ABC-123",
+            CustomerName = "John Smith",
+            ExpectedTime = DateTime.Now.AddHours(1),
+            Status = "On Time"
+        },
+        new RentalReturn 
+        { 
+            Id = 2,
+            VehicleModel = "Honda Civic",
+            LicensePlate = "XYZ-789",
+            CustomerName = "Jane Doe",
+            ExpectedTime = DateTime.Now.AddMinutes(-30),
+            Status = "Delayed"
+        },
+        // Add more sample returns
+    };
+
+    private RentalReturn selectedReturn;
+    private ReturnForm returnForm = new();
+    private bool frontPhotoUploaded;
+
+    private void SelectReturn(RentalReturn rental)
+    {
+        selectedReturn = rental;
+        returnForm = new ReturnForm(); // Reset form
+    }
+
+    private void ClearSelection()
+    {
+        selectedReturn = null;
+        returnForm = new ReturnForm();
+    }
+
+    private void UploadPhoto(string position)
+    {
+        // In a real app, this would open a file picker
+        if (position == "front")
+            frontPhotoUploaded = true;
+    }
+
+    private void RemovePhoto(string position)
+    {
+        if (position == "front")
+            frontPhotoUploaded = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        // Process return logic here
+        await Task.Delay(1000); // Simulate API call
+        ClearSelection();
+    }
+
+    private string GetStatusClass(string status) =>
+        status switch
+        {
+            "Delayed" => "status-delayed",
+            "On Time" => "status-ontime",
+            _ => "status-regular"
+        };
+
+    public class RentalReturn
+    {
+        public int Id { get; set; }
+        public string VehicleModel { get; set; }
+        public string LicensePlate { get; set; }
+        public string CustomerName { get; set; }
+        public DateTime ExpectedTime { get; set; }
+        public string Status { get; set; }
+    }
+
+    public class ReturnForm
+    {
+        public int FuelLevel { get; set; }
+        public int Mileage { get; set; }
+        public string ExteriorCondition { get; set; } = "Clean";
+        public string InteriorCondition { get; set; } = "Clean";
+        public string DamageNotes { get; set; }
+    }
+}
+
+<style>
+    .returns-container {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 1.5rem;
+        height: calc(100vh - 180px);
+    }
+
+    .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        height: 100%;
+    }
+
+    .scan-button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .returns-list {
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        overflow-y: auto;
+        max-height: calc(100% - 3rem);
+    }
+
+    .return-item {
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.2s;
+    }
+
+    .return-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .return-item.selected {
+        border-color: #3498db;
+        background-color: #ebf8ff;
+    }
+
+    .return-time {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 80px;
+    }
+
+    .time {
+        font-size: 1.125rem;
+        font-weight: 500;
+    }
+
+    .status-delayed { color: #e74c3c; }
+    .status-ontime { color: #2ecc71; }
+
+    .return-info {
+        flex: 1;
+    }
+
+    .return-info h3 {
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .plate {
+        color: #7f8c8d;
+        font-size: 0.875rem;
+        margin: 0.25rem 0;
+    }
+
+    .customer {
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .empty-state {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #a0aec0;
+        text-align: center;
+    }
+
+    .return-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 2rem;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        color: #64748b;
+        cursor: pointer;
+        padding: 0.5rem;
+    }
+
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .form-section h3 {
+        margin-bottom: 1rem;
+        color: #2d3748;
+    }
+
+    .condition-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .condition-item {
+        position: relative;
+    }
+
+    .unit {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+
+    .photo-upload-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .upload-area {
+        width: 100%;
+        aspect-ratio: 1;
+        border: 2px dashed #ddd;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .upload-area:hover {
+        border-color: #3498db;
+        color: #3498db;
+    }
+
+    .upload-area.has-image {
+        border-style: solid;
+    }
+
+    .upload-area img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .remove-photo {
+        position: absolute;
+        top: -0.5rem;
+        right: -0.5rem;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+
+    .damage-notes {
+        margin-top: 1rem;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .primary-btn {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .secondary-btn {
+        background-color: white;
+        color: #64748b;
+        border: 1px solid #ddd;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+</style>

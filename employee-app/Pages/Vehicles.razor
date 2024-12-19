@@ -1,0 +1,236 @@
+@page "/vehicles"
+@* @attribute [Authorize] *@
+
+<div class="page-header">
+    <h1>Vehicle Fleet</h1>
+    <button class="add-button">
+        <i class="fas fa-plus"></i> Add New Vehicle
+    </button>
+</div>
+
+<div class="card">
+    <div class="filters">
+        <div class="filter-group">
+            <select class="filter-select">
+                <option value="">All Categories</option>
+                <option value="economy">Economy</option>
+                <option value="standard">Standard</option>
+                <option value="luxury">Luxury</option>
+                <option value="suv">SUV</option>
+            </select>
+                
+            <select class="filter-select">
+                <option value="">All Statuses</option>
+                <option value="available">Available</option>
+                <option value="rented">Rented</option>
+                <option value="maintenance">Maintenance</option>
+            </select>
+
+            <input type="text" placeholder="Search by plate, model..." class="search-input" />
+        </div>
+    </div>
+</div>
+
+<div class="vehicle-grid">
+        
+    @foreach (var vehicle in vehicles)
+    {
+        <div class="vehicle-card">
+            <div class="vehicle-image">
+                <img src="@vehicle.ImageUrl" alt="@vehicle.Model" />
+                <div class="status-badge @vehicle.Status.ToLower()">
+                    @vehicle.Status
+                </div>
+            </div>
+            <div class="vehicle-info">
+                <h3>@vehicle.Model</h3>
+                <p class="plate">@vehicle.LicensePlate</p>
+                <div class="specs">
+                    <span>
+                        <i class="fas fa-car"></i> @vehicle.Category
+                    </span>
+                    <span>
+                        <i class="fas fa-gas-pump"></i> @vehicle.FuelLevel%
+                    </span>
+                    <span>
+                        <i class="fas fa-tachometer-alt"></i> @vehicle.Mileage km
+                    </span>
+                </div>
+            </div>
+            <div class="vehicle-actions">
+                <button class="action-btn">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button class="action-btn">
+                    <i class="fas fa-history"></i> History
+                </button>
+                <button class="action-btn @(vehicle.Status == "Available" ? "" : "disabled")">
+                    <i class="fas fa-key"></i> Rent Out
+                </button>
+            </div>
+        </div>
+    }
+
+    @code
+    {
+        private List<Vehicle> vehicles = new List<Vehicle>
+        {
+            new Vehicle
+            {
+                Model = "Toyota Camry",
+                LicensePlate = "ABC-123",
+                Category = "Standard",
+                Status = "Available",
+                FuelLevel = 85,
+                Mileage = 45000,
+                ImageUrl = "/api/placeholder/300/200"
+            },
+            // Add more sample vehicles
+        };
+
+        public class Vehicle
+        {
+            public string Model { get; set; }
+            public string LicensePlate { get; set; }
+            public string Category { get; set; }
+            public string Status { get; set; }
+            public int FuelLevel { get; set; }
+            public int Mileage { get; set; }
+            public string ImageUrl { get; set; }
+        }
+    }
+</div>
+
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .add-button {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+    }
+
+    .filters {
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .filter-select, .search-input {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        min-width: 150px;
+    }
+
+    .search-input {
+        flex-grow: 1;
+        max-width: 300px;
+    }
+
+    .vehicle-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .vehicle-card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .vehicle-image {
+        position: relative;
+        height: 200px;
+    }
+
+    .vehicle-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .status-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        color: white;
+        font-size: 0.875rem;
+    }
+
+    .status-badge.available { background-color: #2ecc71; }
+    .status-badge.rented { background-color: #e74c3c; }
+    .status-badge.maintenance { background-color: #f1c40f; }
+
+    .vehicle-info {
+        padding: 1rem;
+    }
+
+    .plate {
+        color: #7f8c8d;
+        font-size: 0.875rem;
+    }
+
+    .specs {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        color: #34495e;
+        font-size: 0.875rem;
+    }
+
+    .vehicle-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    .action-btn:hover {
+        background-color: #f1f2f6;
+    }
+
+    .action-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>

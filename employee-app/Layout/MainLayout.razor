@@ -1,0 +1,142 @@
+﻿@inherits LayoutComponentBase
+<div class="page">
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <img src="/images/logo.png" alt="Company Logo" class="logo" />
+            <h3>Car Rental Manager</h3>
+        </div>
+        
+        <NavMenu />
+    </nav>
+
+    <main>
+        <div class="top-bar">
+            <div class="search-section">
+                <input type="text" class="search-input" placeholder="Search by plate number, model..." />
+                <button class="search-btn">Search</button>
+            </div>
+                
+            <div class="filters">
+                <select>
+                    <option value="">Status</option>
+                    <option value="available">Available</option>
+                    <option value="rented">Rented</option>
+                    <option value="maintenance">Maintenance</option>
+                </select>
+                    
+                <select>
+                    <option value="">Category</option>
+                    <option value="economy">Economy</option>
+                    <option value="standard">Standard</option>
+                    <option value="luxury">Luxury</option>
+                </select>
+                    
+                <button class="filter-btn">Apply Filters</button>
+            </div>
+                
+            <div class="user-section">
+                <span class="user-name">UserName</span>
+                <button class="logout-btn">Logout</button>
+            </div>
+        </div>
+
+        <div class="content">
+            @Body
+        </div>
+    </main>
+</div>
+
+<style>
+    .page {
+        display: flex;
+        height: 100vh;
+    }
+
+    .sidebar {
+        width: 250px;
+        background-color: #2c3e50;
+        color: white;
+        padding: 1rem;
+    }
+
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #34495e;
+    }
+
+    .logo {
+        width: 40px;
+        height: 40px;
+    }
+
+    main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: #f5f6fa;
+    }
+
+    .top-bar {
+        background-color: white;
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .search-section {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .search-input {
+        padding: 0.5rem;
+        width: 300px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .filters {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .filters select {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .search-btn, .filter-btn {
+        background-color: #3498db;
+        color: white;
+    }
+
+    .logout-btn {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .content {
+        padding: 1rem;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .user-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+</style>
