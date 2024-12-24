@@ -46,4 +46,22 @@ public class CarService : ICarService
         var response = await _httpClient.DeleteAsync($"{BaseUrl}/{id}");
         response.EnsureSuccessStatusCode();
     }
+
+    public async Task<IEnumerable<CarDto>> GetNextCars(int lastId)
+    {
+        var response = await _httpClient.GetFromJsonAsync<IEnumerable<CarDto>>($"{BaseUrl}/next/{lastId}");
+        return response ?? Enumerable.Empty<CarDto>();
+    }
+    
+    public async Task<IEnumerable<CarDto>> GetPrevCars(int firstId)
+    {
+        var response = await _httpClient.GetFromJsonAsync<IEnumerable<CarDto>>($"{BaseUrl}/previous/{firstId}");
+        return response ?? Enumerable.Empty<CarDto>();
+    }
+    
+    public async Task<int> GetCarsCount()
+    {
+        var response = await _httpClient.GetFromJsonAsync<int>($"{BaseUrl}/count");
+        return response;
+    }
 }

@@ -9,6 +9,15 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0" PrivateAssets="all"/>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="wwwroot\Images\car-rental.png" />
+      <None Include="wwwroot\Images\compact_clean.png" />
+      <None Include="wwwroot\Images\economy_clean.png" />
+      <None Include="wwwroot\Images\suv_clean.png" />
+      <None Include="wwwroot\Images\van_clean.png" />
     </ItemGroup>
 
 </Project>

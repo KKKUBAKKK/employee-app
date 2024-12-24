@@ -13,6 +13,26 @@
       "PackagePath": "staticwebassets/employee-app.styles.css"
     },
     {
+      "Id": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/wwwroot/Images/car-rental.png",
+      "PackagePath": "staticwebassets/Images/car-rental.png"
+    },
+    {
+      "Id": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/wwwroot/Images/compact_clean.png",
+      "PackagePath": "staticwebassets/Images/compact_clean.png"
+    },
+    {
+      "Id": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/wwwroot/Images/economy_clean.png",
+      "PackagePath": "staticwebassets/Images/economy_clean.png"
+    },
+    {
+      "Id": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/wwwroot/Images/suv_clean.png",
+      "PackagePath": "staticwebassets/Images/suv_clean.png"
+    },
+    {
+      "Id": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/wwwroot/Images/van_clean.png",
+      "PackagePath": "staticwebassets/Images/van_clean.png"
+    },
+    {
       "Id": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/wwwroot/css/app.css",
       "PackagePath": "staticwebassets/css/app.css"
     },

@@ -2,5 +2,6 @@ namespace employeeapp.Dtos;
 
 public class CarUpdateDto
 {
-    // Add properties based on your backend DTO
+    public string Location { get; set; } = "Plac Politechniki, Warszawa";
+    public bool IsAvailable { get; set; } = true;
 }

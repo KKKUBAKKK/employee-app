@@ -1,6 +1,10 @@
+using employeeapp.Helpers;
+
 namespace employee;
 
 public class RentalFilterDto
 {
-    public string? Status { get; set; }
+    public RentalStatus? Status { get; set; }
+    // public DateTime? StartDate { get; set; }
+    // public DateTime? EndDate { get; set; }
 }
