@@ -17,7 +17,11 @@ public class LoginService : ILoginService
     {
         var response = await HttpClient.PostAsJsonAsync("api/auth/login", loginInfo);
 
-        if (!response.IsSuccessStatusCode)
+        if (!response.IsSuccessStatusCode && response.StatusCode != System.Net.HttpStatusCode.Unauthorized)
+        {
+            throw new HttpRequestException("Internal Server Error occurred while trying to log in: " + response.StatusCode + response.Content);
+        }
+        else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
         {
             return new Employee(-1, "", "");
         }
