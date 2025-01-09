@@ -1,5 +1,9 @@
 @page "/returns"
+@using employeeapp.Helpers
+@using employeeapp.Services
 @* @attribute [Authorize] *@
+@inject IRentalService RentalService
+@inject ICarService CarService
 
 <div class="page-header">
     <h1>Vehicle Returns</h1>
@@ -19,13 +23,12 @@
                 <div class="return-item @(selectedReturn?.Id == rental.Id ? "selected" : "")" 
                      @onclick="() => SelectReturn(rental)">
                     <div class="return-time">
-                        <span class="time">@rental.ExpectedTime.ToString("HH:mm")</span>
-                        <span class="@GetStatusClass(rental.Status)">@rental.Status</span>
+                        <span class="time">@rental.EndDate.ToString("d")</span>
                     </div>
                     <div class="return-info">
-                        <h3>@rental.VehicleModel</h3>
-                        <p class="plate">@rental.LicensePlate</p>
-                        <p class="customer">@rental.CustomerName</p>
+                        <h3>@rental.Producer @rental.Model</h3>
+                        <p class="plate">@rental.RentalService</p>
+                        <p class="customer">@rental.EndLocation</p>
                     </div>
                     <i class="fas fa-chevron-right"></i>
                 </div>
@@ -44,148 +47,169 @@
         }
         else
         {
-            <div class="return-header">
-                <div class="vehicle-details">
-                    <h2>@selectedReturn.VehicleModel</h2>
-                    <p class="plate">@selectedReturn.LicensePlate</p>
-                </div>
-                <button class="close-btn" @onclick="ClearSelection">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <div class="return-form">
-                <EditForm Model="@returnForm" OnValidSubmit="HandleSubmit">
-                    <div class="form-section">
-                        <h3>Vehicle Condition</h3>
-                        
-                        <div class="condition-grid">
-                            <div class="condition-item">
-                                <label>Fuel Level</label>
-                                <InputNumber @bind-Value="returnForm.FuelLevel" class="form-control" />
-                                <span class="unit">%</span>
-                            </div>
-                            
-                            <div class="condition-item">
-                                <label>Mileage</label>
-                                <InputNumber @bind-Value="returnForm.Mileage" class="form-control" />
-                                <span class="unit">km</span>
-                            </div>
-                            
-                            <div class="condition-item">
-                                <label>Exterior Cleanliness</label>
-                                <InputSelect @bind-Value="returnForm.ExteriorCondition" class="form-control">
-                                    <option value="Clean">Clean</option>
-                                    <option value="Minor Dirt">Minor Dirt</option>
-                                    <option value="Needs Cleaning">Needs Cleaning</option>
-                                </InputSelect>
-                            </div>
-                            
-                            <div class="condition-item">
-                                <label>Interior Cleanliness</label>
-                                <InputSelect @bind-Value="returnForm.InteriorCondition" class="form-control">
-                                    <option value="Clean">Clean</option>
-                                    <option value="Minor Dirt">Minor Dirt</option>
-                                    <option value="Needs Cleaning">Needs Cleaning</option>
-                                </InputSelect>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h3>Damage Inspection</h3>
-                        <div class="photo-upload-grid">
-                            <div class="photo-upload">
-                                <label>Front View</label>
-                                @* <div class="upload-area @(frontPhotoUploaded ? "has-image" : "")"  *@
-                                @*     $1$  @onclick="() => UploadPhoto('front')"> #1# *@
-                                @*     $1$ @if (frontPhotoUploaded) #1# *@
-                                @*     $1$ { #1# *@
-                                @*     $1$     <img src="/api/placeholder/150/150" alt="Front view" /> #1# *@
-                                @*     $1$     <button class="remove-photo" @onclick:stopPropagation="true" #1# *@
-                                @*     $1$             @onclick="() => RemovePhoto('front')"> #1# *@
-                                @*     $1$         <i class="fas fa-times"></i> #1# *@
-                                @*     $1$     </button> #1# *@
-                                @*     $1$ } #1# *@
-                                @*     $1$ else #1# *@
-                                @*     $1$ { #1# *@
-                                @*     $1$     <i class="fas fa-camera"></i> #1# *@
-                                @*     $1$     <span>Add Photo</span> #1# *@
-                                @*     $1$ } #1# *@
-                                @* </div> *@
-                            </div>
-
-                            <div class="photo-upload">
-                                <label>Right Side</label>
-                                <div class="upload-area">
-                                    <i class="fas fa-camera"></i>
-                                    <span>Add Photo</span>
-                                </div>
-                            </div>
-
-                            <div class="photo-upload">
-                                <label>Left Side</label>
-                                <div class="upload-area">
-                                    <i class="fas fa-camera"></i>
-                                    <span>Add Photo</span>
-                                </div>
-                            </div>
-
-                            <div class="photo-upload">
-                                <label>Back View</label>
-                                <div class="upload-area">
-                                    <i class="fas fa-camera"></i>
-                                    <span>Add Photo</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="damage-notes">
-                            <label>Damage Notes</label>
-                            <InputTextArea @bind-Value="returnForm.DamageNotes" 
-                                         placeholder="Describe any new damage or issues..."
-                                         rows="4" 
-                                         class="form-control" />
-                        </div>
-                    </div>
-
-                    <div class="form-actions">
-                        <button type="button" class="secondary-btn" @onclick="ClearSelection">
-                            Cancel
-                        </button>
-                        <button type="submit" class="primary-btn">
-                            Complete Return
-                        </button>
-                    </div>
-                </EditForm>
-            </div>
+            @* <div class="return-header"> *@
+            @*     <div class="vehicle-details"> *@
+            @*         <h2>@selectedReturn.VehicleModel</h2> *@
+            @*         <p class="plate">@selectedReturn.LicensePlate</p> *@
+            @*     </div> *@
+            @*     <button class="close-btn" @onclick="ClearSelection"> *@
+            @*         <i class="fas fa-times"></i> *@
+            @*     </button> *@
+            @* </div> *@
+            @* *@
+            @* <div class="return-form"> *@
+            @*     <EditForm Model="@returnForm" OnValidSubmit="HandleSubmit"> *@
+            @*         <div class="form-section"> *@
+            @*             <h3>Vehicle Condition</h3> *@
+            @*              *@
+            @*             <div class="condition-grid"> *@
+            @*                 <div class="condition-item"> *@
+            @*                     <label>Fuel Level</label> *@
+            @*                     <InputNumber @bind-Value="returnForm.FuelLevel" class="form-control" /> *@
+            @*                     <span class="unit">%</span> *@
+            @*                 </div> *@
+            @*                  *@
+            @*                 <div class="condition-item"> *@
+            @*                     <label>Mileage</label> *@
+            @*                     <InputNumber @bind-Value="returnForm.Mileage" class="form-control" /> *@
+            @*                     <span class="unit">km</span> *@
+            @*                 </div> *@
+            @*                  *@
+            @*                 <div class="condition-item"> *@
+            @*                     <label>Exterior Cleanliness</label> *@
+            @*                     <InputSelect @bind-Value="returnForm.ExteriorCondition" class="form-control"> *@
+            @*                         <option value="Clean">Clean</option> *@
+            @*                         <option value="Minor Dirt">Minor Dirt</option> *@
+            @*                         <option value="Needs Cleaning">Needs Cleaning</option> *@
+            @*                     </InputSelect> *@
+            @*                 </div> *@
+            @*                  *@
+            @*                 <div class="condition-item"> *@
+            @*                     <label>Interior Cleanliness</label> *@
+            @*                     <InputSelect @bind-Value="returnForm.InteriorCondition" class="form-control"> *@
+            @*                         <option value="Clean">Clean</option> *@
+            @*                         <option value="Minor Dirt">Minor Dirt</option> *@
+            @*                         <option value="Needs Cleaning">Needs Cleaning</option> *@
+            @*                     </InputSelect> *@
+            @*                 </div> *@
+            @*             </div> *@
+            @*         </div> *@
+            @* *@
+            @*         <div class="form-section"> *@
+            @*             <h3>Damage Inspection</h3> *@
+            @*             <div class="photo-upload-grid"> *@
+            @*                 <div class="photo-upload"> *@
+            @*                     <label>Front View</label> *@
+            @*                     $1$ <div class="upload-area @(frontPhotoUploaded ? "has-image" : "")"  #1# *@
+            @*                     $1$     $2$  @onclick="() => UploadPhoto('front')"> #2# #1# *@
+            @*                     $1$     $2$ @if (frontPhotoUploaded) #2# #1# *@
+            @*                     $1$     $2$ { #2# #1# *@
+            @*                     $1$     $2$     <img src="/api/placeholder/150/150" alt="Front view" /> #2# #1# *@
+            @*                     $1$     $2$     <button class="remove-photo" @onclick:stopPropagation="true" #2# #1# *@
+            @*                     $1$     $2$             @onclick="() => RemovePhoto('front')"> #2# #1# *@
+            @*                     $1$     $2$         <i class="fas fa-times"></i> #2# #1# *@
+            @*                     $1$     $2$     </button> #2# #1# *@
+            @*                     $1$     $2$ } #2# #1# *@
+            @*                     $1$     $2$ else #2# #1# *@
+            @*                     $1$     $2$ { #2# #1# *@
+            @*                     $1$     $2$     <i class="fas fa-camera"></i> #2# #1# *@
+            @*                     $1$     $2$     <span>Add Photo</span> #2# #1# *@
+            @*                     $1$     $2$ } #2# #1# *@
+            @*                     $1$ </div> #1# *@
+            @*                 </div> *@
+            @* *@
+            @*                 <div class="photo-upload"> *@
+            @*                     <label>Right Side</label> *@
+            @*                     <div class="upload-area"> *@
+            @*                         <i class="fas fa-camera"></i> *@
+            @*                         <span>Add Photo</span> *@
+            @*                     </div> *@
+            @*                 </div> *@
+            @* *@
+            @*                 <div class="photo-upload"> *@
+            @*                     <label>Left Side</label> *@
+            @*                     <div class="upload-area"> *@
+            @*                         <i class="fas fa-camera"></i> *@
+            @*                         <span>Add Photo</span> *@
+            @*                     </div> *@
+            @*                 </div> *@
+            @* *@
+            @*                 <div class="photo-upload"> *@
+            @*                     <label>Back View</label> *@
+            @*                     <div class="upload-area"> *@
+            @*                         <i class="fas fa-camera"></i> *@
+            @*                         <span>Add Photo</span> *@
+            @*                     </div> *@
+            @*                 </div> *@
+            @*             </div> *@
+            @* *@
+            @*             <div class="damage-notes"> *@
+            @*                 <label>Damage Notes</label> *@
+            @*                 <InputTextArea @bind-Value="returnForm.DamageNotes"  *@
+            @*                              placeholder="Describe any new damage or issues..." *@
+            @*                              rows="4"  *@
+            @*                              class="form-control" /> *@
+            @*             </div> *@
+            @*         </div> *@
+            @* *@
+            @*         <div class="form-actions"> *@
+            @*             <button type="button" class="secondary-btn" @onclick="ClearSelection"> *@
+            @*                 Cancel *@
+            @*             </button> *@
+            @*             <button type="submit" class="primary-btn"> *@
+            @*                 Complete Return *@
+            @*             </button> *@
+            @*         </div> *@
+            @*     </EditForm> *@
+            @* </div> *@
         }
     </div>
 </div>
 
 @code {
-    private List<RentalReturn> pendingReturns = new()
+    // private List<RentalReturn> pendingReturns = new()
+    // {
+    //     new RentalReturn 
+    //     { 
+    //         Id = 1,
+    //         VehicleModel = "Toyota Camry",
+    //         LicensePlate = "ABC-123",
+    //         CustomerName = "John Smith",
+    //         ExpectedTime = DateTime.Now.AddHours(1),
+    //         Status = "On Time"
+    //     },
+    //     new RentalReturn 
+    //     { 
+    //         Id = 2,
+    //         VehicleModel = "Honda Civic",
+    //         LicensePlate = "XYZ-789",
+    //         CustomerName = "Jane Doe",
+    //         ExpectedTime = DateTime.Now.AddMinutes(-30),
+    //         Status = "Delayed"
+    //     },
+    //     // Add more sample returns
+    // };
+    
+    private List<RentalReturn> pendingReturns = new();
+
+    protected override async Task OnInitializedAsync()
     {
-        new RentalReturn 
-        { 
-            Id = 1,
-            VehicleModel = "Toyota Camry",
-            LicensePlate = "ABC-123",
-            CustomerName = "John Smith",
-            ExpectedTime = DateTime.Now.AddHours(1),
-            Status = "On Time"
-        },
-        new RentalReturn 
-        { 
-            Id = 2,
-            VehicleModel = "Honda Civic",
-            LicensePlate = "XYZ-789",
-            CustomerName = "Jane Doe",
-            ExpectedTime = DateTime.Now.AddMinutes(-30),
-            Status = "Delayed"
-        },
-        // Add more sample returns
-    };
+        var rentals = await RentalService.GetPendingReturns();
+        var cars = await CarService.GetAllCars();
+        pendingReturns = rentals.Select(r =>
+        {
+            var c = cars.Where(c => (c.Id == r.CarId)).FirstOrDefault();
+            return new RentalReturn
+            {
+                Id = r.Id,
+                Model = c.Model,
+                Producer = c.Producer,
+                RentalService = c.RentalService,
+                EndDate = r.EndDate,
+                EndLocation = r.EndLocation
+            };
+        }).ToList();
+    }
 
     private RentalReturn selectedReturn;
     private ReturnForm returnForm = new();
@@ -234,11 +258,11 @@
     public class RentalReturn
     {
         public int Id { get; set; }
-        public string VehicleModel { get; set; }
-        public string LicensePlate { get; set; }
-        public string CustomerName { get; set; }
-        public DateTime ExpectedTime { get; set; }
-        public string Status { get; set; }
+        public string Model { get; set; }
+        public string Producer { get; set; }
+        public string RentalService { get; set; }
+        public string EndLocation { get; set; }
+        public DateTime EndDate { get; set; }
     }
 
     public class ReturnForm

@@ -15,28 +15,28 @@
 <div class="card">
     <div class="filters">
         <div class="filter-group">
-            <select class="filter-select">
+            <select class="filter-select" @onchange="async e => { _selectedCategory = (e.Value != null && e.Value.ToString() != String.Empty) ? Enum.Parse<CarType>(e.Value.ToString()):null; await ApplyFilters(); }">
                 <option value="">All Categories</option>
-                <option value="economy">Compact</option>
-                <option value="standard">Economy</option>
-                <option value="luxury">Van</option>
+                <option value="compact">Compact</option>
+                <option value="economy">Economy</option>
+                <option value="van">Van</option>
                 <option value="suv">SUV</option>
             </select>
                 
-            <select class="filter-select">
+            <select class="filter-select" @onchange="async e => { _selectedStatus = (e.Value != null && e.Value.ToString() != String.Empty) ? Boolean.Parse(e.Value.ToString()):null; await ApplyFilters(); }">
                 <option value="">All Statuses</option>
-                <option value="available">Available</option>
-                <option value="rented">Rented</option>
+                <option value="true">Available</option>
+                <option value="false">Rented</option>
             </select>
 
-            <input type="text" placeholder="Search by model..." class="search-input" />
+            <input type="text" placeholder="Search by model..." class="search-input" @onchange="async e => { _searchModel = (e.Value != null) ? e.Value.ToString():null; await ApplyFilters(); }"/>
         </div>
     </div>
 </div>
 
 <div class="vehicle-grid">
         
-    @foreach (var vehicle in vehicles)
+    @foreach (var vehicle in _currentVehicles)
     {
         <div class="vehicle-card">
             <div class="vehicle-image">
@@ -67,63 +67,123 @@
                 <button class="action-btn">
                     <i class="fas fa-history"></i> History
                 </button>
-                <button class="action-btn @(vehicle.IsAvailable ? "" : "disabled")">
-                    <i class="fas fa-key"></i> Rent Out
-                </button>
+                @* <button class="action-btn @(vehicle.IsAvailable ? "" : "disabled")"> *@
+                @*     <i class="fas fa-key"></i> Rent Out *@
+                @* </button> *@
             </div>
         </div>
     }
 
     <div class="pagination-controls">
-        <button class="pagination-btn" @onclick="LoadPrevVehicles" disabled="@isFirstPage">Previous Page</button>
-        <span>Page @currentPage of @totalPages</span>
-        <button class="pagination-btn" @onclick="LoadNextVehicles" disabled="@isLastPage">Next Page</button>
+        <button class="pagination-btn" @onclick="LoadPrevVehicles" disabled="@IsFirstPage">Previous Page</button>
+        <span>Page @_currentPage of @_totalPages</span>
+        <button class="pagination-btn" @onclick="LoadNextVehicles" disabled="@IsLastPage">Next Page</button>
     </div>
 
     @code
     {
-        private List<CarDto> vehicles = new List<CarDto>();
-        private int currentPage = 0;
-        private int totalPages = 1;
+        private List<CarDto> _vehicles = new List<CarDto>();
+        private List<CarDto> _filteredVehicles = new List<CarDto>();
+        private List<CarDto> _currentVehicles = new List<CarDto>();
+        private int _currentPage = 0;
+        private int _totalPages = 0;
         private const int PageSize = 10;
-        private int lastVehicleId = 0;
-        private int firstVehicleId = 0;
+        private int _firstVehicleIdx = 0;
+        private int _lastVehicleIdx = 0;
+        
+        // private int lastVehicleId = 0;
+        // private int firstVehicleId = 0;
+        private CarType? _selectedCategory = null;
+        private bool? _selectedStatus = null;
+        private String _searchModel = "";
         
         protected override async Task OnInitializedAsync()
         {
-            await LoadNextVehicles();
-        }
-        
-        private async Task LoadNextVehicles()
-        {
-            if (currentPage == totalPages)
-            {
-                return;
-            }
-            var nextVehicles = await CarService.GetNextCars(lastVehicleId);
-            lastVehicleId = nextVehicles.Count() > 0 ? nextVehicles.Last().Id : lastVehicleId;
-            firstVehicleId = nextVehicles.Count() > 0 ? nextVehicles.First().Id : firstVehicleId;
-            vehicles = nextVehicles.ToList();
-            totalPages = (int)Math.Ceiling((double)await CarService.GetCarsCount() / PageSize);
-            currentPage++;
+            await LoadAllVehicles();
         }
 
-        private async Task LoadPrevVehicles()
+        private async Task LoadAllVehicles()
         {
-            if (currentPage <= 1)
+            var v = await CarService.GetAllCars();
+            _vehicles = v.ToList();
+            FilterVehicles();
+            if (_filteredVehicles.Count == 0)
+            {
+                _totalPages = 0;
+                _firstVehicleIdx = 0;
+                _lastVehicleIdx = 0;
+                _currentVehicles.Clear();
+                return;
+            }
+            _currentPage = 1;
+            _totalPages = (int)Math.Ceiling((double)_filteredVehicles.Count / PageSize);
+            _firstVehicleIdx = 0;
+            _lastVehicleIdx = (_filteredVehicles.Count > PageSize) ? PageSize - 1: _filteredVehicles.Count - 1;
+            _currentVehicles = _filteredVehicles.GetRange(_firstVehicleIdx, _lastVehicleIdx - _firstVehicleIdx + 1);
+        }
+        
+        private void FilterVehicles()
+        {
+            _filteredVehicles = _vehicles;
+            if (_selectedCategory != null)
+            {
+                _filteredVehicles = _filteredVehicles.Where(v => v.Type == _selectedCategory).ToList();
+            }
+            {
+                _filteredVehicles = _filteredVehicles.Where(v => v.Type == _selectedCategory).ToList();
+            }
+            if (_selectedStatus != null)
+            {
+                _filteredVehicles = _filteredVehicles.Where(v => v.IsAvailable == _selectedStatus).ToList();
+            }
+            if (!string.IsNullOrEmpty(_searchModel))
+            {
+                _filteredVehicles = _filteredVehicles.Where(v => v.Model.ToLower().Contains(_searchModel.ToLower())).ToList();
+            }
+        }
+        
+        private void LoadNextVehicles()
+        {
+            if (_currentPage == _totalPages)
             {
                 return;
             }
-            var nextVehicles = await CarService.GetPrevCars(firstVehicleId);
-            lastVehicleId = nextVehicles.Count() > 0 ? nextVehicles.Last().Id : lastVehicleId;
-            firstVehicleId = nextVehicles.Count() > 0 ? nextVehicles.First().Id : firstVehicleId;
-            vehicles = nextVehicles.ToList();
-            totalPages = (int)Math.Ceiling((double)await CarService.GetCarsCount() / PageSize);
-            currentPage--;
+            _currentVehicles.Clear();
+            _firstVehicleIdx += PageSize;
+            _lastVehicleIdx += PageSize;
+            if (_lastVehicleIdx >= _filteredVehicles.Count)
+                _lastVehicleIdx = _filteredVehicles.Count - 1;
+            _currentVehicles = _filteredVehicles.GetRange(_firstVehicleIdx, _lastVehicleIdx - _firstVehicleIdx + 1);
+            _currentPage++;
+        }
+
+        private void LoadPrevVehicles()
+        {
+            if (_currentPage <= 1)
+            {
+                return;
+            }
+            _currentVehicles.Clear();
+            _firstVehicleIdx -= PageSize;
+            _lastVehicleIdx -= PageSize;
+            if (_firstVehicleIdx < 0)
+                _firstVehicleIdx = 0;
+            if (_lastVehicleIdx < PageSize - 1 && _filteredVehicles.Count > PageSize)
+                _lastVehicleIdx = PageSize - 1;
+            _currentVehicles = _filteredVehicles.GetRange(_firstVehicleIdx, _lastVehicleIdx - _firstVehicleIdx + 1);
+            _currentPage--;
         }
         
-        private bool isFirstPage => currentPage <= 1;
-        private bool isLastPage => currentPage >= totalPages;
+        private async Task ApplyFilters()
+        {
+            _currentPage = 0;
+            _firstVehicleIdx = 0;
+            _lastVehicleIdx = 0;
+            await LoadAllVehicles();
+        }
+        
+        private bool IsFirstPage => _currentPage <= 1;
+        private bool IsLastPage => _currentPage >= _totalPages;
         
         private string GetImageUrl(CarType type)
         {
