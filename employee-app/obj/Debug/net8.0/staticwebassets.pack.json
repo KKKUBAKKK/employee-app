@@ -61,6 +61,10 @@
       "PackagePath": "staticwebassets/sample-data/weather.json"
     },
     {
+      "Id": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/wwwroot/site.js",
+      "PackagePath": "staticwebassets/site.js"
+    },
+    {
       "Id": "obj/Debug/net8.0/staticwebassets/msbuild.build.employee-app.props",
       "PackagePath": "build\\employee-app.props"
     },

@@ -1,118 +1,171 @@
-@* @page "/login" *@
-@* $1$ @inject IAuthService AuthService #1# *@
-@* @inject NavigationManager NavigationManager *@
-@* *@
-@* <div class="login-container"> *@
-@*     <div class="login-box"> *@
-@*         <div class="login-header"> *@
-@*             <img src="/images/logo.png" alt="Company Logo" class="logo" /> *@
-@*             <h2>Car Rental Manager</h2> *@
-@*         </div> *@
-@* *@
-@*         <EditForm Model="@loginModel" OnValidSubmit="HandleLogin"> *@
-@*             <DataAnnotationsValidator /> *@
-@*             <ValidationSummary /> *@
-@* *@
-@*             <div class="form-group"> *@
-@*                 <label for="username">Username</label> *@
-@*                 <InputText id="username" @bind-Value="loginModel.Username" class="form-control" /> *@
-@*                 <ValidationMessage For="@(() => loginModel.Username)" /> *@
-@*             </div> *@
-@* *@
-@*             <div class="form-group"> *@
-@*                 <label for="password">Password</label> *@
-@*                 <InputText type="password" id="password" @bind-Value="loginModel.Password" class="form-control" /> *@
-@*                 <ValidationMessage For="@(() => loginModel.Password)" /> *@
-@*             </div> *@
-@* *@
-@*             <button type="submit" class="login-button" disabled="@isLoading"></button> *@
-@*         </EditForm> *@
-@*     </div> *@
-@* </div> *@
-@* *@
-@* <style> *@
-@*     .login-container { *@
-@*         display: flex; *@
-@*         justify-content: center; *@
-@*         align-items: center; *@
-@*         min-height: 100vh; *@
-@*         background-color: #f5f6fa; *@
-@*     } *@
-@* *@
-@*     .login-box { *@
-@*         background-color: white; *@
-@*         padding: 2rem; *@
-@*         border-radius: 8px; *@
-@*         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); *@
-@*         width: 100%; *@
-@*         max-width: 400px; *@
-@*     } *@
-@* *@
-@*     .login-header { *@
-@*         text-align: center; *@
-@*         margin-bottom: 2rem; *@
-@*     } *@
-@* *@
-@*     .login-header img { *@
-@*         width: 80px; *@
-@*         height: 80px; *@
-@*         margin-bottom: 1rem; *@
-@*     } *@
-@* *@
-@*     .form-group { *@
-@*         margin-bottom: 1rem; *@
-@*     } *@
-@* *@
-@*     .form-group label { *@
-@*         display: block; *@
-@*         margin-bottom: 0.5rem; *@
-@*         color: #2c3e50; *@
-@*     } *@
-@* *@
-@*     .form-control { *@
-@*         width: 100%; *@
-@*         padding: 0.75rem; *@
-@*         border: 1px solid #ddd; *@
-@*         border-radius: 4px; *@
-@*         font-size: 1rem; *@
-@*     } *@
-@* *@
-@*     .login-button { *@
-@*         width: 100%; *@
-@*         padding: 0.75rem; *@
-@*         background-color: #3498db; *@
-@*         color: white; *@
-@*         border: none; *@
-@*         border-radius: 4px; *@
-@*         font-size: 1rem; *@
-@*         cursor: pointer; *@
-@*         transition: background-color 0.2s; *@
-@*     } *@
-@* *@
-@*     .login-button:hover { *@
-@*         background-color: #2980b9; *@
-@*     } *@
-@* *@
-@*     .login-button:disabled { *@
-@*         background-color: #bdc3c7; *@
-@*         cursor: not-allowed; *@
-@*     } *@
-@* *@
-@*     .validation-message { *@
-@*         color: #e74c3c; *@
-@*         font-size: 0.875rem; *@
-@*         margin-top: 0.25rem; *@
-@*     } *@
-@* *@
-@*     .alert { *@
-@*         padding: 0.75rem; *@
-@*         border-radius: 4px; *@
-@*         margin-top: 1rem; *@
-@*     } *@
-@* *@
-@*     .alert-danger { *@
-@*         background-color: #fceaea; *@
-@*         border: 1px solid #e74c3c; *@
-@*         color: #e74c3c; *@
-@*     } *@
-@* </style> *@
+@page "/login"
+@using employee_app.Dtos
+@using employee_app.Models
+@using employee_app.Services
+@inject NavigationManager Navigation
+@inject EmployeeAuthenticationStateProvider AuthStateProvider
+@inject ILoginService LoginService
+@inject IJSRuntime Js
+
+@* <h3>Login</h3> *@
+@* <input @bind="username" placeholder="Username" /> *@
+@* <input @bind="password" type="password" placeholder="Password" /> *@
+@* <button @onclick="LoginUser">Login</button> *@
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+    private bool isLoading = false;
+    private string errorMessage;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async Task LoginUser()
+    {
+        isLoading = true;
+        errorMessage = null; // Clear previous error message
+        var loginInfo = new LoginDto { Username = loginModel.Username, Password = loginModel.Password };
+        var employee = await LoginService.Login(loginInfo);
+
+        if (employee.Id != -1 && !string.IsNullOrWhiteSpace(employee.Token))
+        {
+            await AuthStateProvider.MarkUserAsAuthenticated(employee);
+            Navigation.NavigateTo("/");
+            await Js.InvokeVoidAsync("refreshPage");
+        }
+        else
+        {
+            errorMessage = "Invalid username or password";
+        }
+        isLoading = false;
+    }
+}
+
+
+<div class="login-container">
+    <div class="login-box">
+        <div class="login-header">
+            <img src="/images/car-rental.png" alt="Company Logo" class="logo" />
+            <h2>Car Rental Manager</h2>
+        </div>
+
+        <EditForm Model="@loginModel" OnValidSubmit="LoginUser">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">@errorMessage</div>
+            }
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <InputText id="username" @bind-Value="loginModel.Username" class="form-control" />
+                <ValidationMessage For="@(() => loginModel.Username)" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText type="password" id="password" @bind-Value="loginModel.Password" class="form-control" />
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+
+            <button type="submit" class="login-button" disabled="@isLoading">Login</button>
+        </EditForm>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f5f6fa;
+    }
+
+    .login-box {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .login-header img {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+
+    .login-button {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .login-button:hover {
+        background-color: #2980b9;
+    }
+
+    .login-button:disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+    }
+
+    .validation-message {
+        color: #e74c3c;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .alert {
+        padding: 0.75rem;
+        border-radius: 4px;
+        margin-top: 1rem;
+    }
+
+    .alert-danger {
+        background-color: #fceaea;
+        border: 1px solid #e74c3c;
+        color: #e74c3c;
+    }
+</style>
