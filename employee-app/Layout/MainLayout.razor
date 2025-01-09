@@ -2,6 +2,7 @@
 @inherits LayoutComponentBase
 @inject NavigationManager Navigation
 @inject EmployeeAuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime Js
 
 <div class="page">
     <nav class="sidebar">
@@ -52,6 +53,7 @@
     {
         await AuthStateProvider.MarkUserAsLoggedOut();
         Navigation.NavigateTo("/login");
+        await Js.InvokeVoidAsync("refreshPage");
     }
 
 }

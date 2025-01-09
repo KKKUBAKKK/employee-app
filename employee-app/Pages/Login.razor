@@ -5,6 +5,7 @@
 @inject NavigationManager Navigation
 @inject EmployeeAuthenticationStateProvider AuthStateProvider
 @inject ILoginService LoginService
+@inject IJSRuntime Js
 
 @* <h3>Login</h3> *@
 @* <input @bind="username" placeholder="Username" /> *@
@@ -38,6 +39,7 @@
         {
             await AuthStateProvider.MarkUserAsAuthenticated(employee);
             Navigation.NavigateTo("/");
+            await Js.InvokeVoidAsync("refreshPage");
         }
         else
         {

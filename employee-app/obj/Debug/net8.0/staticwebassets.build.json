@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "y4TxDLtcPaI1bVKf9KlfvUbPngo4p/WZdbgnAJGx8RE=",
+  "Hash": "j9FjGsjykbzF0hFP2A6tqvLpLWt9G9SRQpxRyJpAwZA=",
   "Source": "employee-app",
   "BasePath": "/",
   "Mode": "Root",
@@ -8413,6 +8413,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/sample-data/weather.json"
+    },
+    {
+      "Identity": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/wwwroot/site.js",
+      "SourceId": "employee-app",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/wwwroot/",
+      "BasePath": "/",
+      "RelativePath": "site.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/site.js"
     }
   ]
 }
