@@ -1,3 +1,37 @@
+@page "/login"
+@using employee_app.Dtos
+@using employee_app.Services
+@inject NavigationManager Navigation
+@inject EmployeeAuthenticationStateProvider AuthStateProvider
+@inject ILoginService LoginService
+
+<h3>Login</h3>
+<input @bind="username" placeholder="Username" />
+<input @bind="password" type="password" placeholder="Password" />
+<button @onclick="LoginUser">Login</button>
+
+@code {
+    private string username;
+    private string password;
+
+    private async Task LoginUser()
+    {
+        var loginInfo = new LoginDto { Username = username, Password = password };
+        var employee = await LoginService.Login(loginInfo);
+
+        if (employee.Id != -1 && !string.IsNullOrWhiteSpace(employee.Token))
+        {
+            await AuthStateProvider.MarkUserAsAuthenticated(employee);
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            // Handle login failure (e.g., show an error message)
+        }
+    }
+}
+
+
 @* @page "/login" *@
 @* $1$ @inject IAuthService AuthService #1# *@
 @* @inject NavigationManager NavigationManager *@
