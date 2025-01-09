@@ -1,4 +1,9 @@
-﻿@inherits LayoutComponentBase
+﻿@using employee_app.Services
+@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+@inject EmployeeAuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime Js
+
 <div class="page">
     <nav class="sidebar">
         <div class="sidebar-brand">
@@ -11,9 +16,9 @@
 
     <main>
         <div class="top-bar">
-            <div class="user-section">
-                <span class="user-name">UserName</span>
-                <button class="logout-btn">Logout</button>
+            <div class="user-section" style="margin-left: auto;" hidden="@string.IsNullOrEmpty(username)">>
+                <span class="user-name">@username</span>
+                <button class="logout-btn" @onclick="Logout">Logout</button>
             </div>
         </div>
 
@@ -22,6 +27,36 @@
         </div>
     </main>
 </div>
+
+@code {
+
+    private string username;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user == null)
+            username = "";
+
+        if (user.Identity.IsAuthenticated)
+        {
+            username = user.Identity.Name;
+        }
+        else
+        {
+            username = "";
+        }
+    }
+    
+    private async Task Logout()
+    {
+        await AuthStateProvider.MarkUserAsLoggedOut();
+        Navigation.NavigateTo("/login");
+        await Js.InvokeVoidAsync("refreshPage");
+    }
+
+}
 
 <style>
     .page {
@@ -61,7 +96,7 @@
         padding: 1rem;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: end;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 

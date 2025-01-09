@@ -1,7 +1,9 @@
 @page "/returns"
 @using employeeapp.Helpers
 @using employeeapp.Services
-@* @attribute [Authorize] *@
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+
 @inject IRentalService RentalService
 @inject ICarService CarService
 
