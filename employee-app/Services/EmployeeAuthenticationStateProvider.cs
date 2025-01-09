@@ -23,15 +23,25 @@ public class EmployeeAuthenticationStateProvider : AuthenticationStateProvider
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var token = await LocalStorageService.GetItemAsync<string>("authToken");
+        var username = await LocalStorageService.GetItemAsync<string>("username");
+        var employeeId = await LocalStorageService.GetItemAsync<string>("employeeId");
 
-        if (string.IsNullOrWhiteSpace(token))
+        if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(username) || string.IsNullOrEmpty(employeeId))
         {
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
 
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        
+        var identity = new ClaimsIdentity(new[]
+        {
+            new Claim("Token", token),
+            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.NameIdentifier, employeeId)
+        }, "apiauth_type");
+        var user = new ClaimsPrincipal(identity);
 
-        return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt")));
+        return new AuthenticationState(user);
     }
 
     public async Task MarkUserAsAuthenticated(Employee employee)
@@ -39,7 +49,13 @@ public class EmployeeAuthenticationStateProvider : AuthenticationStateProvider
         await LocalStorageService.SetItemAsync("authToken", employee.Token);
         await LocalStorageService.SetItemAsync("username", employee.Username);
         await LocalStorageService.SetItemAsync("employeeId", employee.Id.ToString());
-        var identity = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, employee.Username) }, "jwt");
+        
+        var identity = new ClaimsIdentity(new[]
+        {
+            new Claim("Token", employee.Token),
+            new Claim(ClaimTypes.Name, employee.Username),
+            new Claim(ClaimTypes.NameIdentifier, employee.Id.ToString())
+        }, "apiauth_type");
         var user = new ClaimsPrincipal(identity);
         var authState = Task.FromResult(new AuthenticationState(user));
 
@@ -54,13 +70,6 @@ public class EmployeeAuthenticationStateProvider : AuthenticationStateProvider
 
         _httpClient.DefaultRequestHeaders.Authorization = null;
 
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal())));
-    }
-
-    private IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
-    {
-        var handler = new JsonWebTokenHandler();
-        var token = handler.ReadJsonWebToken(jwt);
-        return token.Claims;
+        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()))));
     }
 }

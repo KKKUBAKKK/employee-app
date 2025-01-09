@@ -1,5 +1,6 @@
 ﻿@using employee_app.Services
 @inherits LayoutComponentBase
+@inject NavigationManager Navigation
 @inject EmployeeAuthenticationStateProvider AuthStateProvider
 
 <div class="page">
@@ -14,9 +15,9 @@
 
     <main>
         <div class="top-bar">
-            <div class="user-section">
+            <div class="user-section" style="margin-left: auto;" hidden="@string.IsNullOrEmpty(username)">>
                 <span class="user-name">@username</span>
-                <button class="logout-btn">Logout</button>
+                <button class="logout-btn" @onclick="Logout">Logout</button>
             </div>
         </div>
 
@@ -35,7 +36,7 @@
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
         if (user == null)
-            username = "Guest";
+            username = "";
 
         if (user.Identity.IsAuthenticated)
         {
@@ -43,8 +44,14 @@
         }
         else
         {
-            username = "Guest";
+            username = "";
         }
+    }
+    
+    private async Task Logout()
+    {
+        await AuthStateProvider.MarkUserAsLoggedOut();
+        Navigation.NavigateTo("/login");
     }
 
 }
