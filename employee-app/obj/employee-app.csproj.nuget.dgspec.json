@@ -1,26 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/employee-app.csproj": {}
+    "C:\\Users\\Janek\\Documents\\Studia\\MINI\\sem5\\DOTNET\\Empl-api\\Wer_2.0\\employee-app\\employee-app.csproj": {}
   },
   "projects": {
-    "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/employee-app.csproj": {
+    "C:\\Users\\Janek\\Documents\\Studia\\MINI\\sem5\\DOTNET\\Empl-api\\Wer_2.0\\employee-app\\employee-app.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/employee-app.csproj",
+        "projectUniqueName": "C:\\Users\\Janek\\Documents\\Studia\\MINI\\sem5\\DOTNET\\Empl-api\\Wer_2.0\\employee-app\\employee-app.csproj",
         "projectName": "employee-app",
-        "projectPath": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/employee-app.csproj",
-        "packagesPath": "/Users/jakubkindracki/.nuget/packages/",
-        "outputPath": "/Users/jakubkindracki/RiderProjects/employee-app/employee-app/obj/",
+        "projectPath": "C:\\Users\\Janek\\Documents\\Studia\\MINI\\sem5\\DOTNET\\Empl-api\\Wer_2.0\\employee-app\\employee-app.csproj",
+        "packagesPath": "C:\\Users\\Janek\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Janek\\Documents\\Studia\\MINI\\sem5\\DOTNET\\Empl-api\\Wer_2.0\\employee-app\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/Users/jakubkindracki/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\Janek\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "/usr/local/share/dotnet/library-packs": {},
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -33,7 +38,13 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -67,13 +78,13 @@
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.0, )",
+              "version": "[8.0.11, )",
               "autoReferenced": true
             },
             "Microsoft.NET.Sdk.WebAssembly.Pack": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[8.0.11, )",
+              "version": "[9.0.0, )",
               "autoReferenced": true
             }
           },
@@ -99,7 +110,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.100/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {
