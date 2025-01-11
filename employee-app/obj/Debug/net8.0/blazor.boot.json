@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "employee-app",
   "resources": {
-    "hash": "sha256-9NpWGrNIas5k2Yk7AmRGS1RirtdOUW4GNfEDbOugnC8=",
+    "hash": "sha256-es7p8Qhmngd0dRf5OMi4vpJxnXi/7OR2uI8BO1dNZKU=",
     "jsModuleNative": {
       "dotnet.native.8.0.11.rsm4p8sqa7.js": "sha256-VdKq87/z5NIxZKmuM+fv38XF+RcEb/bg3jVBwQSfwP4="
     },
@@ -218,10 +218,10 @@
       "mscorlib.wasm": "sha256-04e4k5XU8HWGB/dq/2+j84xzzGPflTs0IYWI0OxogVc=",
       "netstandard.wasm": "sha256-gnGZURPnoSmjXuYNCOJi5tt8qn2LRImWgue1Ru3/TDQ=",
       "System.Private.CoreLib.wasm": "sha256-6w3jYr0arcp8jnt4aeqh+AmqrLA6q7jl9rQYAwLzE0M=",
-      "employee-app.wasm": "sha256-StXOKIAZ+w7mW+H5haFbEaoVzo+58SPJq1gDFO2Zoxs="
+      "employee-app.wasm": "sha256-FTslZGkfKZbREYEy+tMLTJaznEJAmk29knROFicHFnk="
     },
     "pdb": {
-      "employee-app.pdb": "sha256-CokNflEAm8W0TxpwRDya5hc0iXcXosmRjb0rPHzMNCg="
+      "employee-app.pdb": "sha256-CcWcXFdsezP8xtWqcdO8EsTx/0E+Hv0UOy8W4VWJukM="
     }
   },
   "cacheBootResources": true,
