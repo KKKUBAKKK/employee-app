@@ -16,7 +16,8 @@
 
     <main>
         <div class="top-bar">
-            <div class="user-section" style="margin-left: auto;" hidden="@string.IsNullOrEmpty(username)">>
+            <div class="user-section" style="margin-left: auto;" hidden="@string.IsNullOrEmpty(username)">
+            @* <div class="user-section" style="margin-left: auto;" hidden="@string.IsNullOrEmpty(username)">> *@
                 <span class="user-name">@username</span>
                 <button class="logout-btn" @onclick="Logout">Logout</button>
             </div>

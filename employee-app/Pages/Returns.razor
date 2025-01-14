@@ -1,4 +1,5 @@
 @page "/returns"
+@using Blazored.LocalStorage
 @using employee
 @using employeeapp.Dtos
 @using employeeapp.Helpers
@@ -9,6 +10,7 @@
 @inject IRentalService RentalService
 @inject ICarService CarService
 @inject IJSRuntime JSRuntime
+@inject ILocalStorageService LocalStorageService
 
 <div class="page-header">
     <h1>Vehicle Returns</h1>
@@ -247,6 +249,7 @@
     // };
     
     private List<RentalReturnInfo> pendingReturns = new();
+    private int employeeId = 1;
 
     protected override async Task OnInitializedAsync()
     {
@@ -261,6 +264,12 @@
                 car = c
             };
         }).ToList();
+        
+        var employeeIdString = await LocalStorageService.GetItemAsync<string>("employeeId");
+        if (!string.IsNullOrEmpty(employeeIdString))
+        {
+            employeeId = int.Parse(employeeIdString);
+        }
     }
 
     private RentalReturnInfo? selectedReturn;
@@ -366,7 +375,8 @@
     private async Task CompleteReturn()
     {
         var returnDto = new ReturnRecordDto();
-        
+
+        returnDto.EmployeeID = employeeId;
         returnDto.RentalId = selectedReturn.rental.Id;
         returnDto.Condition = returnForm.Condition;
         returnDto.FrontPhotoUrl = returnForm.FrontPhotoUrl;
@@ -390,12 +400,12 @@
     //
     public class ReturnForm
     {
-        public string Condition { get; set; }
-        public string FrontPhotoUrl { get; set; }
-        public string BackPhotoUrl { get; set; }
-        public string RightPhotoUrl { get; set; }
-        public string LeftPhotoUrl { get; set; }
-        public string EmployeeNotes { get; set; }
+        public string Condition { get; set; } = "";
+        public string FrontPhotoUrl { get; set; } = "";
+        public string BackPhotoUrl { get; set; } = "";
+        public string RightPhotoUrl { get; set; } = "";
+        public string LeftPhotoUrl { get; set; } = "";
+        public string EmployeeNotes { get; set; } = "";
         public DateTime ReturnDate { get; set; } = DateTime.Today;
     }
 }
