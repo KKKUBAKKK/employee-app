@@ -11,8 +11,13 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+var baseAddress = builder.HostEnvironment.IsDevelopment() 
+    ? "http://localhost:5001" 
+    : "https://car-rental-api-chezbchwebfggwcd.canadacentral-01.azurewebsites.net";
+
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
 // builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://car-rental-api-chezbchwebfggwcd.canadacentral-01.azurewebsites.net") });
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5001") });
+// builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5001") });
 
 builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<IRentalService, RentalService>();
