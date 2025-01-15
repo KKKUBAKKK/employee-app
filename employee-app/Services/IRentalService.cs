@@ -1,3 +1,4 @@
+using employee_app.Dtos;
 using employee;
 using employeeapp.Dtos;
 
@@ -8,4 +9,5 @@ public interface IRentalService
     Task<IEnumerable<RentalDto>> GetAllRentals(RentalFilterDto? filter = null);
     Task<IEnumerable<RentalDto>> GetPendingReturns();
     Task<ReturnRecordDto> CompleteReturn(ReturnRecordDto returnRecord);
+    Task<List<RentalHistoryDto>> GetVehicleRentalHistory(int vehicleId);
 }
