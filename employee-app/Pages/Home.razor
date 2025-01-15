@@ -2,6 +2,8 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 
+@inject HttpClient HttpClient
+
 <div class="container-fluid p-4">
     <div class="row mb-4">
         <div class="col">
@@ -25,6 +27,14 @@
             </div>
         </div>
         <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">All Cars</h5>
+                    <h2 class="card-text">@allCars</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
             <div class="card bg-success text-white">
                 <div class="card-body">
                     <h5 class="card-title">Active Rentals</h5>
@@ -40,119 +50,111 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h5 class="card-title">Reservations</h5>
-                    <h2 class="card-text">@reservations</h2>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Recent Activities and Due Returns -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Recent Activities</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Time</th>
-                                    <th>Activity</th>
-                                    <th>Employee</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var activity in recentActivities)
-                                {
-                                    <tr>
-                                        <td>@activity.Timestamp.ToShortTimeString()</td>
-                                        <td>@activity.Description</td>
-                                        <td>@activity.EmployeeName</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Due Returns Today</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>Return Time</th>
-                                    <th>Customer</th>
-                                    <th>Vehicle</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var rental in dueReturnsList)
-                                {
-                                    <tr>
-                                        <td>@rental.ReturnTime.ToShortTimeString()</td>
-                                        <td>@rental.CustomerName</td>
-                                        <td>@rental.VehicleInfo</td>
-                                        <td>
-                                            <span class="badge @GetStatusBadgeClass(rental.Status)">
-                                                @rental.Status
-                                            </span>
-                                        </td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Quick Actions</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-primary" @onclick="NewRental">
-                            <i class="fas fa-plus"></i> New Rental
-                        </button>
-                        <button class="btn btn-success" @onclick="ProcessReturn">
-                            <i class="fas fa-check"></i> Process Return
-                        </button>
-                        <button class="btn btn-info" @onclick="ManageReservations">
-                            <i class="fas fa-calendar"></i> Manage Reservations
-                        </button>
-                        <button class="btn btn-secondary" @onclick="ViewReports">
-                            <i class="fas fa-chart-bar"></i> View Reports
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @* <div class="row mb-4"> *@
+    @*     <div class="col-md-6"> *@
+    @*         <div class="card"> *@
+    @*             <div class="card-header"> *@
+    @*                 <h5 class="mb-0">Recent Activities</h5> *@
+    @*             </div> *@
+    @*             <div class="card-body"> *@
+    @*                 <div class="table-responsive"> *@
+    @*                     <table class="table"> *@
+    @*                         <thead> *@
+    @*                             <tr> *@
+    @*                                 <th>Time</th> *@
+    @*                                 <th>Activity</th> *@
+    @*                                 <th>Employee</th> *@
+    @*                             </tr> *@
+    @*                         </thead> *@
+    @*                         <tbody> *@
+    @*                             @foreach (var activity in recentActivities) *@
+    @*                             { *@
+    @*                                 <tr> *@
+    @*                                     <td>@activity.Timestamp.ToShortTimeString()</td> *@
+    @*                                     <td>@activity.Description</td> *@
+    @*                                     <td>@activity.EmployeeName</td> *@
+    @*                                 </tr> *@
+    @*                             } *@
+    @*                         </tbody> *@
+    @*                     </table> *@
+    @*                 </div> *@
+    @*             </div> *@
+    @*         </div> *@
+    @*     </div> *@
+    @*     <div class="col-md-6"> *@
+    @*         <div class="card"> *@
+    @*             <div class="card-header"> *@
+    @*                 <h5 class="mb-0">Due Returns Today</h5> *@
+    @*             </div> *@
+    @*             <div class="card-body"> *@
+    @*                 <div class="table-responsive"> *@
+    @*                     <table class="table"> *@
+    @*                         <thead> *@
+    @*                             <tr> *@
+    @*                                 <th>Return Time</th> *@
+    @*                                 <th>Customer</th> *@
+    @*                                 <th>Vehicle</th> *@
+    @*                                 <th>Status</th> *@
+    @*                             </tr> *@
+    @*                         </thead> *@
+    @*                         <tbody> *@
+    @*                             @foreach (var rental in dueReturnsList) *@
+    @*                             { *@
+    @*                                 <tr> *@
+    @*                                     <td>@rental.ReturnTime.ToShortTimeString()</td> *@
+    @*                                     <td>@rental.CustomerName</td> *@
+    @*                                     <td>@rental.VehicleInfo</td> *@
+    @*                                     <td> *@
+    @*                                         <span class="badge @GetStatusBadgeClass(rental.Status)"> *@
+    @*                                             @rental.Status *@
+    @*                                         </span> *@
+    @*                                     </td> *@
+    @*                                 </tr> *@
+    @*                             } *@
+    @*                         </tbody> *@
+    @*                     </table> *@
+    @*                 </div> *@
+    @*             </div> *@
+    @*         </div> *@
+    @*     </div> *@
+    @* </div> *@
+    @* *@
+    @* <!-- Quick Actions --> *@
+    @* <div class="row"> *@
+    @*     <div class="col-md-12"> *@
+    @*         <div class="card"> *@
+    @*             <div class="card-header"> *@
+    @*                 <h5 class="mb-0">Quick Actions</h5> *@
+    @*             </div> *@
+    @*             <div class="card-body"> *@
+    @*                 <div class="d-flex gap-2"> *@
+    @*                     <button class="btn btn-primary" @onclick="NewRental"> *@
+    @*                         <i class="fas fa-plus"></i> New Rental *@
+    @*                     </button> *@
+    @*                     <button class="btn btn-success" @onclick="ProcessReturn"> *@
+    @*                         <i class="fas fa-check"></i> Process Return *@
+    @*                     </button> *@
+    @*                     <button class="btn btn-info" @onclick="ManageReservations"> *@
+    @*                         <i class="fas fa-calendar"></i> Manage Reservations *@
+    @*                     </button> *@
+    @*                     <button class="btn btn-secondary" @onclick="ViewReports"> *@
+    @*                         <i class="fas fa-chart-bar"></i> View Reports *@
+    @*                     </button> *@
+    @*                 </div> *@
+    @*             </div> *@
+    @*         </div> *@
+    @*     </div> *@
+    @* </div> *@
 </div>
 
 @code {
     private int availableCars = 0;
     private int activeRentals = 0;
     private int pendingReturns = 0;
-    private int reservations = 0;
+    private int allCars = 0;
     private List<Activity> recentActivities = new();
     private List<RentalReturn> dueReturnsList = new();
 
@@ -163,8 +165,16 @@
 
     private async Task LoadDashboardData()
     {
-        // TODO: Implement data loading from service
-        await Task.CompletedTask;
+        // Load quick stats
+        var activeCount = await HttpClient.GetFromJsonAsync<int>("api/employee/rentals/active-count");
+        var pendingCount = await HttpClient.GetFromJsonAsync<int>("api/employee/rentals/pending-returns-count");
+        var allCarsCount = await HttpClient.GetFromJsonAsync<int>("api/employee/cars/count");
+        var availableCarsCount = await HttpClient.GetFromJsonAsync<int>("api/employee/cars/count/available");
+
+        availableCars = availableCarsCount;
+        activeRentals = activeCount;
+        pendingReturns = pendingCount;
+        allCars = allCarsCount;
     }
 
     private async Task RefreshData()
