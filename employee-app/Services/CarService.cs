@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using employee_app.Dtos;
+using employee_app.Models;
 using employeeapp.Dtos;
 using employeeapp.Helpers;
 
