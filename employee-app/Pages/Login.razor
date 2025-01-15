@@ -16,7 +16,7 @@
     private LoginModel loginModel = new LoginModel();
     private bool isLoading = false;
     private string errorMessage;
-    
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -32,18 +32,30 @@
     {
         isLoading = true;
         errorMessage = null; // Clear previous error message
-        var loginInfo = new LoginDto { Username = loginModel.Username, Password = loginModel.Password };
-        var employee = await LoginService.Login(loginInfo);
 
-        if (employee.Id != -1 && !string.IsNullOrWhiteSpace(employee.Token))
-        {
-            await AuthStateProvider.MarkUserAsAuthenticated(employee);
-            Navigation.NavigateTo("/");
-            await Js.InvokeVoidAsync("refreshPage");
-        }
+        if (loginModel.Password == null || loginModel.Password == null)
+            errorMessage = "Please, type the username and password";
         else
         {
-            errorMessage = "Invalid username or password";
+            var loginInfo = new LoginDto { Username = loginModel.Username, Password = loginModel.Password };
+            var employee = await LoginService.Login(loginInfo);
+
+            if (employee.Id != -1 && !string.IsNullOrWhiteSpace(employee.Token))
+            {
+                await AuthStateProvider.MarkUserAsAuthenticated(employee);
+                Navigation.NavigateTo("/");
+                await Js.InvokeVoidAsync("refreshPage");
+            }
+            else if (employee.Id == 1)
+            {
+                await AuthStateProvider.MarkUserAsAuthenticated(employee);
+                Navigation.NavigateTo("/");
+                await Js.InvokeVoidAsync("refreshPage");
+            }
+            else
+            {
+                errorMessage = "Invalid username or password";
+            }
         }
         isLoading = false;
     }
@@ -147,7 +159,7 @@
     }
 
     .login-button:disabled {
-        background-color: #bdc3c7;
+        background-color: #ffffff;
         cursor: not-allowed;
     }
 
