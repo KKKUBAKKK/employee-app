@@ -1,0 +1,36 @@
+# Ignore bin and obj directories
+bin/
+obj/
+
+# Ignore Rider project files
+.idea/
+*.sln.iml
+
+# Ignore build output
+out/
+*.log
+
+# Ignore user-specific files
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+
+# Ignore compiled files
+*.dll
+*.exe
+*.so
+*.dylib
+*.class
+
+# Ignore package directories
+node_modules/
+dist/

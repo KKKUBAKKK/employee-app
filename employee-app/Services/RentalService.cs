@@ -1,4 +1,7 @@
+using System.Net;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 using employee;
 using employeeapp.Dtos;
 
@@ -35,12 +38,27 @@ public class RentalService : IRentalService
     public async Task<ReturnRecordDto> CompleteReturn(ReturnRecordDto returnRecord)
     {
         var content = new MultipartFormDataContent();
+        content.Add(new StringContent(returnRecord.EmployeeID.ToString()), "EmployeeID");
         content.Add(new StringContent(returnRecord.RentalId.ToString()), "RentalId");
         content.Add(new StringContent(returnRecord.Condition), "Condition");
-        content.Add(new StringContent(returnRecord.EmployeeNotes ?? ""), "EmployeeNotes");
+        content.Add(new StringContent(returnRecord.FrontPhotoUrl), "FrontPhotoUrl");
+        content.Add(new StringContent(returnRecord.BackPhotoUrl), "BackPhotoUrl");
+        content.Add(new StringContent(returnRecord.RightPhotoUrl), "RightPhotoUrl");
+        content.Add(new StringContent(returnRecord.LeftPhotoUrl), "LeftPhotoUrl");
+        content.Add(new StringContent(returnRecord.EmployeeNotes), "EmployeeNotes");
+        content.Add(new StringContent(returnRecord.ReturnDate.ToString("yyyy-MM-ddTHH:mm:ss")), "ReturnDate");
         
+        // var content = new StringContent(JsonSerializer.Serialize(returnRecord), Encoding.UTF8, "application/json");
+
         var response = await _httpClient.PostAsync($"{BaseUrl}/complete-return", content);
-        response.EnsureSuccessStatusCode();
+        var responseContent = await response.Content.ReadAsStringAsync();
+        if (!response.IsSuccessStatusCode 
+            && !response.StatusCode.Equals(HttpStatusCode.NotFound) 
+            && !responseContent.Equals("Customer API not found"))
+        {
+            response.EnsureSuccessStatusCode();
+        }
+
         return await response.Content.ReadFromJsonAsync<ReturnRecordDto>() 
                ?? throw new Exception("Failed to complete return");
     }

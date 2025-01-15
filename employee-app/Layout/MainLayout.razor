@@ -1,5 +1,8 @@
 ﻿@using employee_app.Services
+@using employeeapp.Helpers
+@using Microsoft.JSInterop
 @inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 @inject EmployeeAuthenticationStateProvider AuthStateProvider
 @inject IJSRuntime Js
@@ -16,9 +19,10 @@
 
     <main>
         <div class="top-bar">
-            <div class="user-section" style="margin-left: auto;" hidden="@string.IsNullOrEmpty(username)">>
-                <span class="user-name">@username</span>
-                <button class="logout-btn" @onclick="Logout">Logout</button>
+            <div class="user-section" style="margin-left: auto;">>
+                <span class="user-name" hidden="@string.IsNullOrEmpty(username)">@username</span>
+                <button class="logout-btn" @onclick="Logout" hidden="@string.IsNullOrEmpty(username)">Logout </button>
+                <button class="customer-side-btn" @onclick="OpenPage">Customer side</button>
             </div>
         </div>
 
@@ -54,6 +58,11 @@
         await AuthStateProvider.MarkUserAsLoggedOut();
         Navigation.NavigateTo("/login");
         await Js.InvokeVoidAsync("refreshPage");
+    }
+
+    private void OpenPage()
+    {
+        JSRuntime.InvokeVoidAsync("open", Constants.CustomerWebSide, "_blank");
     }
 
 }
@@ -140,10 +149,21 @@
         color: white;
     }
 
+    .customer-side-btn {
+        background-color: blue;
+        color: white;
+    }
+
     .content {
         padding: 1rem;
         flex: 1;
         overflow-y: auto;
+    }
+
+    .user-section-logout {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
     .user-section {
