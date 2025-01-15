@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using employee_app.Dtos;
 using employee;
 using employeeapp.Dtos;
 
@@ -61,5 +62,12 @@ public class RentalService : IRentalService
 
         return await response.Content.ReadFromJsonAsync<ReturnRecordDto>() 
                ?? throw new Exception("Failed to complete return");
+    }
+    
+    public async Task<List<RentalHistoryDto>> GetVehicleRentalHistory(int vehicleId)
+    {
+        // Get all rentals for the vehicle
+        var response = await _httpClient.GetFromJsonAsync<IEnumerable<RentalHistoryDto>>($"{BaseUrl}/history/{vehicleId}");
+        return response?.ToList() ?? new List<RentalHistoryDto>();
     }
 }

@@ -1,3 +1,5 @@
+using employee_app.Dtos;
+using employee_app.Models;
 using employeeapp.Dtos;
 
 namespace employeeapp.Services;
@@ -9,6 +11,7 @@ public interface ICarService
     Task<CarDto> AddCar(CarCreateDto car);
     Task<CarDto> UpdateCar(int id, CarUpdateDto car);
     Task DeleteCar(int id);
+
     // Task<IEnumerable<CarDto>> GetNextCars(int lastId);
     // Task<IEnumerable<CarDto>> GetPrevCars(int firstId);
     // Task<int> GetCarsCount();

@@ -1,10 +1,96 @@
 @page "/vehicles"
+@using employee_app.Dtos
+@using employee_app.Models
 @using employeeapp.Dtos
 @using employeeapp.Helpers
 @using employeeapp.Services
 @inject ICarService CarService
+@inject IRentalService RentalService
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
+
+<div class="@(_showHistoryModal ? "modal-overlay" : "modal-overlay hidden")">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Vehicle History - @(_selectedVehicle?.Producer) @(_selectedVehicle?.Model)</h2>
+            <button class="close-button" @onclick="CloseHistoryModal">×</button>
+        </div>
+        <div class="modal-body">
+            @if (_selectedVehicle != null && _rentalHistory != null)
+            {
+                <div class="vehicle-details">
+                    <h3>Vehicle Information</h3>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <span class="label">Type:</span>
+                            <span>@_selectedVehicle.Type</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Year:</span>
+                            <span>@_selectedVehicle.YearOfProduction</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Seats:</span>
+                            <span>@_selectedVehicle.NumberOfSeats</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Status:</span>
+                            <span class="@(_selectedVehicle.IsAvailable ? "text-green-600" : "text-red-600")">
+                                @(_selectedVehicle.IsAvailable ? "Available" : "Rented")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rental-history">
+                    <h3>Rental History</h3>
+                    @if (_rentalHistory.Any())
+                    {
+                        <div class="history-list">
+                            @foreach (var rental in _rentalHistory)
+                            {
+                                <div class="history-item">
+                                    <div class="rental-info">
+                                        <div class="rental-dates">
+                                            <span class="date-label">From:</span>
+                                            <span class="date-value">@rental.StartDate.ToShortDateString()</span>
+                                            <span class="date-label">To:</span>
+                                            <span class="date-value">@rental.EndDate.ToShortDateString()</span>
+                                        </div>
+                                        <div class="renter-info">
+                                            <span class="renter-label">Renter:</span>
+                                            <span class="renter-value">@rental.RenterName</span>
+                                        </div>
+                                        <div class="status.@(rental.Status)">
+                                            @(rental.Status.ToString())
+                                        </div>
+                                        <div class="condition">
+                                            @(rental.Condition)
+                                        </div>
+                                        <div class="totalprice">
+                                            @(rental.TotalPrice.ToString())
+                                        </div>
+                                    </div>
+                                    @* @if (!string.IsNullOrEmpty(rental.Notes)) *@
+                                    @* { *@
+                                    @*     <div class="rental-notes"> *@
+                                    @*         <span class="notes-label">Notes:</span> *@
+                                    @*         <span class="notes-value">@rental.Notes</span> *@
+                                    @*     </div> *@
+                                    @* } *@
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="no-history">No rental history available for this vehicle.</p>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
 
 <div class="page-header">
     <h1>Vehicle Fleet</h1>
@@ -65,12 +151,9 @@
                 <button class="action-btn">
                     <i class="fas fa-edit"></i> Edit
                 </button>
-                <button class="action-btn">
-                    <i class="fas fa-history"></i> History
+                <button class="action-btn" @onclick="() => ShowHistoryModal(vehicle)">
+                    <i class="fas fa-history"></i> Info
                 </button>
-                @* <button class="action-btn @(vehicle.IsAvailable ? "" : "disabled")"> *@
-                @*     <i class="fas fa-key"></i> Rent Out *@
-                @* </button> *@
             </div>
         </div>
     }
@@ -83,6 +166,26 @@
 
     @code
     {
+        private bool _showHistoryModal = false;
+        private CarDto _selectedVehicle;
+        private List<RentalHistoryDto> _rentalHistory;
+
+        private async Task ShowHistoryModal(CarDto vehicle)
+        {
+            _selectedVehicle = vehicle;
+            _showHistoryModal = true;
+            // Assuming you have a method in your service to get rental history
+            _rentalHistory = await RentalService.GetVehicleRentalHistory(vehicle.Id);
+            StateHasChanged();
+        }
+
+        private void CloseHistoryModal()
+        {
+            _showHistoryModal = false;
+            _selectedVehicle = null;
+            _rentalHistory = null;
+        }
+        
         private List<CarDto> _vehicles = new List<CarDto>();
         private List<CarDto> _filteredVehicles = new List<CarDto>();
         private List<CarDto> _currentVehicles = new List<CarDto>();
@@ -345,5 +448,151 @@
         padding: 0.5rem 1rem;
         border-radius: 4px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-overlay.hidden {
+        display: none;
+    }
+
+    .modal-content {
+        background-color: white;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .close-button {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.5rem;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .vehicle-details {
+        margin-bottom: 2rem;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .detail-item {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .label {
+        font-weight: 600;
+        color: #4a5568;
+    }
+
+    .rental-history {
+        margin-top: 2rem;
+    }
+
+    .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .history-item {
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        padding: 1rem;
+    }
+
+    .rental-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .rental-dates {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .date-label, .renter-label {
+        font-weight: 500;
+        color: #4a5568;
+    }
+
+    .status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+    }
+
+    .status.planned {
+        background-color: #c6f6d5;
+        color: #2f855a;
+    }
+
+    .status.inProgress {
+        background-color: #c6f6d5;
+        color: #2f855a;
+    }
+
+    .status.pendingReturn {
+        background-color: #f3b4be;
+        color: #e04343;
+    }
+
+    .status.ended {
+        background-color: #e2e8f0;
+        color: #4a5568;
+    }
+
+    .rental-notes {
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .notes-label {
+        font-weight: 500;
+        color: #4a5568;
+        margin-right: 0.5rem;
+    }
+
+    .no-history {
+        text-align: center;
+        color: #718096;
+        padding: 2rem;
     }
 </style>
