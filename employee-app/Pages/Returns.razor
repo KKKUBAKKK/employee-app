@@ -1,4 +1,5 @@
 @page "/returns"
+@using System.ComponentModel.DataAnnotations
 @using Blazored.LocalStorage
 @using employee
 @using employeeapp.Dtos
@@ -66,47 +67,15 @@
             
             <div class="return-form">
                 <EditForm Model="@returnForm" OnValidSubmit="CompleteReturn">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="validation-summary" />
+
                     <div class="form-section">
                         <h3>Vehicle Condition</h3>
-            
-                        @* <div class="condition-grid"> *@
-                            @* <div class="condition-item"> *@
-                            @*     <label>Fuel Level</label> *@
-                            @*     <InputNumber @bind-Value="returnForm.FuelLevel" class="form-control" /> *@
-                            @*     <span class="unit">%</span> *@
-                            @* </div> *@
-                            @* *@
-                            @* <div class="condition-item"> *@
-                            @*     <label>Mileage</label> *@
-                            @*     <InputNumber @bind-Value="returnForm.Mileage" class="form-control" /> *@
-                            @*     <span class="unit">km</span> *@
-                            @* </div> *@
-                            @* *@
-                            @* <div class="condition-item"> *@
-                            @*     <label>Exterior Cleanliness</label> *@
-                            @*     <InputSelect @bind-Value="returnForm.ExteriorCondition" class="form-control"> *@
-                            @*         <option value="Clean">Clean</option> *@
-                            @*         <option value="Minor Dirt">Minor Dirt</option> *@
-                            @*         <option value="Needs Cleaning">Needs Cleaning</option> *@
-                            @*     </InputSelect> *@
-                            @* </div> *@
-                            @* *@
-                            @* <div class="condition-item"> *@
-                            @*     <label>Interior Cleanliness</label> *@
-                            @*     <InputSelect @bind-Value="returnForm.InteriorCondition" class="form-control"> *@
-                            @*         <option value="Clean">Clean</option> *@
-                            @*         <option value="Minor Dirt">Minor Dirt</option> *@
-                            @*         <option value="Needs Cleaning">Needs Cleaning</option> *@
-                            @*     </InputSelect> *@
-                            @* </div> *@
-                    @*     </div> *@
-                    @* </div> *@
-                    @* *@
-                    @* <div class="form-section"> *@
-                    @*     <h3>Damage Inspection</h3> *@
+                        
                         <div class="photo-upload-grid">
                             <div class="photo-upload">
-                                <label>Front view</label>
+                                <label>Front View</label>
                                 <div class="upload-area @(frontPhotoUploaded ? "has-image" : "")">
                                     @if (frontPhotoUploaded)
                                     {
@@ -117,7 +86,7 @@
                                     }
                                     else
                                     {
-                                        <InputFile OnChange="@((e) => UploadPhoto(e, "front"))" />
+                                        <InputFile OnChange="@((e) => UploadPhoto(e, "front"))"/>
                                         <i class="fas fa-camera"></i>
                                         <span>Add Photo</span>
                                     }
@@ -129,14 +98,14 @@
                                 <div class="upload-area @(rightPhotoUploaded ? "has-image" : "")">
                                     @if (rightPhotoUploaded)
                                     {
-                                        <img src="@returnForm.RightPhotoUrl" alt="Right side" />
+                                        <img src="@returnForm.RightPhotoUrl" alt="Right side"/>
                                         <button class="remove-photo" @onclick="@(() => RemovePhoto("right"))">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     }
                                     else
                                     {
-                                        <InputFile OnChange="@((e) => UploadPhoto(e, "right"))" />
+                                        <InputFile OnChange="@((e) => UploadPhoto(e, "right"))"/>
                                         <i class="fas fa-camera"></i>
                                         <span>Add Photo</span>
                                     }
@@ -148,14 +117,14 @@
                                 <div class="upload-area @(leftPhotoUploaded ? "has-image" : "")">
                                     @if (leftPhotoUploaded)
                                     {
-                                        <img src="@returnForm.LeftPhotoUrl" alt="Left side" />
+                                        <img src="@returnForm.LeftPhotoUrl" alt="Left side"/>
                                         <button class="remove-photo" @onclick="@(() => RemovePhoto("left"))">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     }
                                     else
                                     {
-                                        <InputFile OnChange="@((e) => UploadPhoto(e, "left"))" />
+                                        <InputFile OnChange="@((e) => UploadPhoto(e, "left"))"/>
                                         <i class="fas fa-camera"></i>
                                         <span>Add Photo</span>
                                     }
@@ -167,14 +136,14 @@
                                 <div class="upload-area @(backPhotoUploaded ? "has-image" : "")">
                                     @if (backPhotoUploaded)
                                     {
-                                        <img src="@returnForm.BackPhotoUrl" alt="Back view" />
+                                        <img src="@returnForm.BackPhotoUrl" alt="Back view"/>
                                         <button class="remove-photo" @onclick="@(() => RemovePhoto("back"))">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     }
                                     else
                                     {
-                                        <InputFile OnChange="@((e) => UploadPhoto(e, "back"))" />
+                                        <InputFile OnChange="@((e) => UploadPhoto(e, "back"))"/>
                                         <i class="fas fa-camera"></i>
                                         <span>Add Photo</span>
                                     }
@@ -185,7 +154,8 @@
                         <div class="condition-grid">
                             <div class="condition-item">
                                 <label>Return Date</label>
-                                <InputDate @bind-Value="returnForm.ReturnDate" class="form-control" />
+                                <InputDate @bind-Value="returnForm.ReturnDate" class="form-control"/>
+                                <ValidationMessage For="@(() => returnForm.ReturnDate)" class="validation-message" />
                             </div>
 
                             <div class="condition-item">
@@ -198,6 +168,7 @@
                                     <option value="Poor">Poor</option>
                                     <option value="Damaged">Damaged</option>
                                 </InputSelect>
+                                <ValidationMessage For="@(() => returnForm.Condition)" class="validation-message" />
                             </div>
 
                             <div class="damage-notes">
@@ -205,11 +176,12 @@
                                 <InputTextArea @bind-Value="returnForm.EmployeeNotes"
                                                placeholder="Describe any new damage or issues..."
                                                rows="4"
-                                               class="form-control" />
+                                               class="form-control"/>
+                                <ValidationMessage For="@(() => returnForm.EmployeeNotes)" class="validation-message" />
                             </div>
                         </div>
                     </div>
-            
+
                     <div class="form-actions">
                         <button type="button" class="secondary-btn" @onclick="ClearSelection">
                             Cancel
@@ -400,12 +372,19 @@
     //
     public class ReturnForm
     {
+        [Required(ErrorMessage = "Please select a vehicle condition")]
         public string Condition { get; set; } = "";
+        [Required(ErrorMessage = "Front photo is required")]
         public string FrontPhotoUrl { get; set; } = "";
+        [Required(ErrorMessage = "Back photo is required")]
         public string BackPhotoUrl { get; set; } = "";
+        [Required(ErrorMessage = "Right side photo is required")]
         public string RightPhotoUrl { get; set; } = "";
+        [Required(ErrorMessage = "Left side photo is required")]
         public string LeftPhotoUrl { get; set; } = "";
+        [Required(ErrorMessage = "Please provide notes about the vehicle condition")]
         public string EmployeeNotes { get; set; } = "";
+        [Required(ErrorMessage = "Return date is required")]
         public DateTime ReturnDate { get; set; } = DateTime.Today;
     }
 }
@@ -513,6 +492,26 @@
         justify-content: center;
         color: #a0aec0;
         text-align: center;
+    }
+
+    .validation-summary {
+        color: #e74c3c;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background-color: #fdf2f2;
+        border-radius: 4px;
+        border: 1px solid #fbd5d5;
+    }
+
+    .validation-message {
+        color: #e74c3c;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: block;
+    }
+
+    .form-control.invalid {
+        border-color: #e74c3c;
     }
 
     .condition-grid {
