@@ -1,7 +1,7 @@
 # Employee App
 
 ## Link to deployed app
-employee-app-eegsgzadcefrbfak.polandcentral-01.azurewebsites.net
+[Employee App](employee-app-eegsgzadcefrbfak.polandcentral-01.azurewebsites.net)
 
 ## Objective
 
