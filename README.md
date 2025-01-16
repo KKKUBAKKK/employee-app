@@ -1,7 +1,10 @@
 # Employee App
 
-## Link to deployed app
+## Link to deployed employee app
 [Employee App](employee-app-eegsgzadcefrbfak.polandcentral-01.azurewebsites.net)
+
+## Link to deplyed customer app (another project)
+[Customer App](http://molczane.github.io)
 
 ## Objective
 
