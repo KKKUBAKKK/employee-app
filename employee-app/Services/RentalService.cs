@@ -18,7 +18,7 @@ public class RentalService : IRentalService
         _httpClient = httpClient;
     }
 
-    public async Task<IEnumerable<RentalDto>> GetAllRentals(RentalFilterDto? filter = null)
+    public async Task<IEnumerable<RentalDetailsDto>> GetAllRentals(RentalFilterDto? filter = null)
     {
         var queryString = "";
         if (filter?.Status != null)
@@ -26,8 +26,8 @@ public class RentalService : IRentalService
             queryString = $"?Status={filter.Status}";
         }
 
-        var response = await _httpClient.GetFromJsonAsync<IEnumerable<RentalDto>>($"{BaseUrl}{queryString}");
-        return response ?? Enumerable.Empty<RentalDto>();
+        var response = await _httpClient.GetFromJsonAsync<IEnumerable<RentalDetailsDto>>($"{BaseUrl}{queryString}");
+        return response ?? Enumerable.Empty<RentalDetailsDto>();
     }
 
     public async Task<IEnumerable<RentalDto>> GetPendingReturns()
