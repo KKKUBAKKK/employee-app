@@ -1,16 +1,123 @@
 @page "/rentals"
+@using employee_app.Dtos
+@using employeeapp.Helpers
+@using employeeapp.Services
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 
+@inject IRentalService RentalService
+
+<div class="@(_showDetailsModal ? "modal-overlay" : "modal-overlay-hidden")">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Rental Details</h2>
+            <button class="close-button" @onclick="CloseDetailsModal">×</button>
+        </div>
+        <div class="modal-body">
+            @if (_selectedRental != null)
+            {
+                <div class="details-sections">
+                    <div class="details-section">
+                        <h3>Vehicle Information</h3>
+                        <div class="details-grid">
+                            <div class="detail-item">
+                                <img src="@GetImageUrl(_selectedRental.Car.Type)" alt="Vehicle" class="vehicle-preview"/>
+                            </div>
+                            <div class="detail-info">
+                                <div class="detail-row">
+                                    <span class="label">Vehicle:</span>
+                                    <span>@_selectedRental.Car.Producer @_selectedRental.Car.Model</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Type:</span>
+                                    <span>@_selectedRental.Car.Type</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="label">Location:</span>
+                                    <span>@_selectedRental.Car.Location</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="details-section">
+                        <h3>Customer Information</h3>
+                        <div class="details-grid">
+                            <div class="detail-row">
+                                <span class="label">Name:</span>
+                                <span>@_selectedRental.Customer.FirstName @_selectedRental.Customer.LastName</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Date of birth:</span>
+                                <span>@_selectedRental.Customer.Birthday</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Date of acquiring driver's license:</span>
+                                <span>@_selectedRental.Customer.DriverLicenseReceiveDate</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Users rental:</span>
+                                <span>@_selectedRental.Customer.RentalName</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="details-section">
+                        <h3>Rental Information</h3>
+                        <div class="details-grid">
+                            <div class="detail-row">
+                                <span class="label">Status:</span>
+                                <span class="status-badge @GetStatus(_selectedRental.Status).ToLower()">
+                                    @GetStatus(_selectedRental.Status)
+                                </span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Start Date:</span>
+                                <span>@_selectedRental.StartDate.ToShortDateString()</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">End Date:</span>
+                                <span>@_selectedRental.EndDate?.ToShortDateString()</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Duration:</span>
+                                <span>@((_selectedRental.EndDate - _selectedRental.StartDate)?.TotalDays ?? 0) days</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Total Price:</span>
+                                <span>$@_selectedRental.TotalPrice</span>
+                            </div>
+                            @if (_selectedRental.ReturnRecord != null && String.IsNullOrEmpty(_selectedRental.ReturnRecord.Condition))
+                            {
+                                <div class="detail-row">
+                                    <span class="label">Condition:</span>
+                                    <span>@_selectedRental.ReturnRecord.Condition</span>
+                                </div>
+                            }
+                            @if (_selectedRental.ReturnRecord != null && String.IsNullOrEmpty(_selectedRental.ReturnRecord.EmployeeNotes))
+                            {
+                                <div class="detail-row">
+                                    <span class="label">Notes:</span>
+                                    <span>@_selectedRental.ReturnRecord.EmployeeNotes</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
 <div class="page-header">
-    <h1>Active Rentals</h1>
+    <h1>Rentals</h1>
     <div class="header-actions">
-        <button class="header-btn new-rental">
-            <i class="fas fa-plus"></i> New Rental
-        </button>
-        <button class="header-btn export">
-            <i class="fas fa-file-export"></i> Export
-        </button>
+        @* <button class="header-btn new-rental"> *@
+        @*     <i class="fas fa-plus"></i> New Rental *@
+        @* </button> *@
+        @* <button class="header-btn export"> *@
+        @*     <i class="fas fa-file-export"></i> Export *@
+        @* </button> *@
     </div>
 </div>
 
@@ -22,7 +129,8 @@
             </div>
             <div class="stat-content">
                 <h3>Active Rentals</h3>
-                <p class="stat-value">@activeRentals.Count</p>
+                <p class="stat-value">@activeRentals.Count(r => r.Status == RentalStatus.inProgress
+                                                                || r.Status == RentalStatus.planned)</p>
             </div>
         </div>
         
@@ -31,8 +139,8 @@
                 <i class="fas fa-exclamation-circle"></i>
             </div>
             <div class="stat-content">
-                <h3>Overdue</h3>
-                <p class="stat-value">@activeRentals.Count(r => r.Status == "Overdue")</p>
+                <h3>Pending Returns</h3>
+                <p class="stat-value">@activeRentals.Count(r => r.Status == RentalStatus.pendingReturn)</p>
             </div>
         </div>
         
@@ -41,41 +149,53 @@
                 <i class="fas fa-clock"></i>
             </div>
             <div class="stat-content">
-                <h3>Due Today</h3>
-                <p class="stat-value">@activeRentals.Count(r => r.Status == "Due Today")</p>
+                <h3>Ended</h3>
+                <p class="stat-value">@activeRentals.Count(r => r.Status == RentalStatus.ended)</p>
             </div>
         </div>
     </div>
 
     <div class="main-content">
         <div class="filters-bar">
-            <div class="search-section">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search by customer, plate number, or rental ID..." />
-                </div>
-            </div>
+            <input type="text"
+                   placeholder="Search by car, customer, location..."
+                   @oninput="HandleSearch"
+                   value="@_searchTerm"/>
+
+            <select class="filter-select" @onchange="HandleStatusFilter">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="pending-return">Pending Return</option>
+                <option value="ended">Ended</option>
+            </select>
             
-            <div class="filter-section">
-                <select class="filter-select">
-                    <option value="">All Statuses</option>
-                    <option value="active">Active</option>
-                    <option value="overdue">Overdue</option>
-                    <option value="due-today">Due Today</option>
-                </select>
-                
-                <select class="filter-select">
-                    <option value="">All Locations</option>
-                    <option value="main">Main Office</option>
-                    <option value="downtown">Downtown</option>
-                    <option value="airport">Airport</option>
-                </select>
-                
-                <button class="filter-btn">
-                    <i class="fas fa-sliders-h"></i>
-                    More Filters
-                </button>
-            </div>
+            @* <div class="search-section"> *@
+            @*     <div class="search-box"> *@
+            @*         <i class="fas fa-search"></i> *@
+            @*         <input type="text" placeholder="Search by car, customer, location..."/> *@
+            @*     </div> *@
+            @* </div> *@
+            @* *@
+            @* <div class="filter-section"> *@
+            @*     <select class="filter-select"> *@
+            @*         <option value="">All Statuses</option> *@
+            @*         <option value="active">Active</option> *@
+            @*         <option value="pending-return">Pending Return</option> *@
+            @*         <option value="ended">Ended</option> *@
+            @*     </select> *@
+            @* *@ 
+            @*     $1$ <select class="filter-select"> #1# *@
+            @*     $1$     <option value="">All Locations</option> #1# *@
+            @*     $1$     <option value="main">Main Office</option> #1# *@
+            @*     $1$     <option value="downtown">Downtown</option> #1# *@
+            @*     $1$     <option value="airport">Airport</option> #1# *@
+            @*     $1$ </select> #1# *@
+            @* *@
+            @*     $1$ <button class="filter-btn"> #1# *@
+            @*     $1$     <i class="fas fa-sliders-h"></i> #1# *@
+            @*     $1$     More Filters #1# *@
+            @*     $1$ </button> #1# *@
+            @* </div> *@
         </div>
 
         <div class="rentals-table">
@@ -102,15 +222,15 @@
                             </td>
                             <td>
                                 <div class="rental-info">
-                                    <img src="@rental.VehicleImage" alt="@rental.VehicleModel" />
+                                    <img src="@GetImageUrl(@rental.Car.Type)"/>
                                     <div>
                                         <div class="vehicle-info">
-                                            <span class="model">@rental.VehicleModel</span>
-                                            <span class="plate">@rental.LicensePlate</span>
+                                            <span class="model">@rental.Car.Producer @rental.Car.Model</span>
+                                            @* <span class="plate">@rental.LicensePlate</span> *@
                                         </div>
                                         <div class="customer-info">
-                                            <span class="name">@rental.CustomerName</span>
-                                            <span class="phone">@rental.CustomerPhone</span>
+                                            <span class="name">@rental.Customer.FirstName @rental.Customer.LastName</span>
+                                            @* <span class="phone">@rental.CustomerPhone</span> *@
                                         </div>
                                     </div>
                                 </div>
@@ -120,38 +240,38 @@
                                     <div class="date-range">
                                         <span>@rental.StartDate.ToShortDateString()</span>
                                         <i class="fas fa-arrow-right"></i>
-                                        <span>@rental.EndDate.ToShortDateString()</span>
+                                        <span>@rental.EndDate?.ToShortDateString()</span>
                                     </div>
-                                    <div class="duration">@rental.Duration days</div>
+                                    <div class="duration">@((rental.EndDate - rental.StartDate)?.TotalDays ?? 0) days</div>
                                 </div>
                             </td>
                             <td>
                                 <div class="location-info">
-                                    <span class="location">@rental.Location</span>
+                                    <span class="location">@rental.Car.Location</span>
                                 </div>
                             </td>
                             <td>
-                                <span class="status-badge @rental.Status.ToLower()">@rental.Status</span>
+                                <span class="status-badge.@GetStatus(rental.Status).ToLower()">@GetStatus(rental.Status)</span>
                             </td>
                             <td>
                                 <div class="payment-info">
-                                    <span class="amount">$@rental.Amount</span>
-                                    <span class="payment-status @rental.PaymentStatus.ToLower()">
-                                        @rental.PaymentStatus
-                                    </span>
+                                    <span class="amount">$@rental.TotalPrice</span>
+                                    @* <span class="payment-status @rental.PaymentStatus.ToLower()"> *@
+                                    @*     @rental.PaymentStatus *@
+                                    @* </span> *@
                                 </div>
                             </td>
                             <td>
                                 <div class="actions">
-                                    <button class="action-btn" title="View Details">
-                                        <i class="fas fa-eye"></i>
+                                    <button class="action-btn" title="View Details" @onclick="() => ShowDetailsModal(rental)">
+                                        <i class="fas fa-eye"></i> Details
                                     </button>
-                                    <button class="action-btn" title="Edit Rental">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="action-btn" title="Process Return">
-                                        <i class="fas fa-check-circle"></i>
-                                    </button>
+                                    @* <button class="action-btn" title="Edit Rental"> *@
+                                    @*     <i class="fas fa-edit"></i> *@
+                                    @* </button> *@
+                                    @* <button class="action-btn" title="Process Return"> *@
+                                    @*     <i class="fas fa-check-circle"></i> *@
+                                    @* </button> *@
                                 </div>
                             </td>
                         </tr>
@@ -160,72 +280,121 @@
             </table>
         </div>
 
-        <div class="pagination">
-            <button class="page-btn" disabled>
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="page-btn active">1</button>
-            <button class="page-btn">2</button>
-            <button class="page-btn">3</button>
-            <span class="page-separator">...</span>
-            <button class="page-btn">12</button>
-            <button class="page-btn">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
+        @* <div class="pagination"> *@
+        @*     <button class="page-btn" disabled> *@
+        @*         <i class="fas fa-chevron-left"></i> *@
+        @*     </button> *@
+        @*     <button class="page-btn active">1</button> *@
+        @*     <button class="page-btn">2</button> *@
+        @*     <button class="page-btn">3</button> *@
+        @*     <span class="page-separator">...</span> *@
+        @*     <button class="page-btn">12</button> *@
+        @*     <button class="page-btn"> *@
+        @*         <i class="fas fa-chevron-right"></i> *@
+        @*     </button> *@
+        @* </div> *@
     </div>
 </div>
 
 @code {
-    private List<RentalData> activeRentals = new()
+    private List<RentalDetailsDto> activeRentals = new();
+    
+    // Initialized
+    protected override async Task OnInitializedAsync()
     {
-        new RentalData
+        activeRentals = (await RentalService.GetAllRentals()).ToList();
+    }
+    
+    private string GetImageUrl(CarType type)
+    {
+        return type switch
         {
-            VehicleModel = "Toyota Camry",
-            LicensePlate = "ABC-123",
-            CustomerName = "John Smith",
-            CustomerPhone = "(555) 123-4567",
-            StartDate = DateTime.Now.AddDays(-5),
-            EndDate = DateTime.Now.AddDays(2),
-            Duration = 7,
-            Location = "Main Office",
-            Status = "Active",
-            Amount = 350.00m,
-            PaymentStatus = "Paid",
-            VehicleImage = "/api/placeholder/60/60"
-        },
-        new RentalData
+            CarType.compact => "Images/compact_clean.png",
+            CarType.economy => "Images/economy_clean.png",
+            CarType.van => "Images/van_clean.png",
+            CarType.suv => "Images/suv_clean.png",
+            _ => "Images/car-rental.png"
+        };
+    }
+    
+    private string GetStatus(RentalStatus status)
+    {
+        return status switch
         {
-            VehicleModel = "Honda Civic",
-            LicensePlate = "XYZ-789",
-            CustomerName = "Jane Doe",
-            CustomerPhone = "(555) 987-6543",
-            StartDate = DateTime.Now.AddDays(-3),
-            EndDate = DateTime.Now.AddDays(-1),
-            Duration = 2,
-            Location = "Downtown",
-            Status = "Overdue",
-            Amount = 150.00m,
-            PaymentStatus = "Pending",
-            VehicleImage = "/api/placeholder/60/60"
-        },
-        // Add more sample rentals as needed
-    };
+            RentalStatus.inProgress => "Active",
+            RentalStatus.planned => "Active",
+            RentalStatus.pendingReturn => "Pending-Return",
+            RentalStatus.ended => "Ended",
+            _ => "Active"
+        };
+    }
+    
+    private bool _showDetailsModal = false;
+    private RentalDetailsDto _selectedRental;
+    private string _searchTerm = "";
+    private RentalStatus? _selectedStatus = null;
 
-    public class RentalData
+    private void ShowDetailsModal(RentalDetailsDto rental)
     {
-        public string VehicleModel { get; set; }
-        public string LicensePlate { get; set; }
-        public string CustomerName { get; set; }
-        public string CustomerPhone { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
-        public int Duration { get; set; }
-        public string Location { get; set; }
-        public string Status { get; set; }
-        public decimal Amount { get; set; }
-        public string PaymentStatus { get; set; }
-        public string VehicleImage { get; set; }
+        _selectedRental = rental;
+        _showDetailsModal = true;
+        StateHasChanged();
+    }
+
+    private void CloseDetailsModal()
+    {
+        _showDetailsModal = false;
+        _selectedRental = null;
+    }
+
+    private async Task HandleSearch(ChangeEventArgs e)
+    {
+        _searchTerm = e.Value?.ToString() ?? "";
+        await FilterRentals();
+    }
+
+    private async Task HandleStatusFilter(ChangeEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.Value?.ToString()))
+        {
+            _selectedStatus = null;
+        }
+        else
+        {
+            _selectedStatus = e.Value.ToString()?.ToLower() switch
+            {
+                "active" => RentalStatus.inProgress,
+                "pending-return" => RentalStatus.pendingReturn,
+                "ended" => RentalStatus.ended,
+                _ => null
+            };
+        }
+        await FilterRentals();
+    }
+
+    private async Task FilterRentals()
+    {
+        var allRentals = await RentalService.GetAllRentals();
+    
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(_searchTerm))
+        {
+            string searchLower = _searchTerm.ToLower();
+            allRentals = allRentals.Where(r =>
+                (r.Car.Producer + " " + r.Car.Model).ToLower().Contains(searchLower) ||
+                (r.Customer.FirstName + " " + r.Customer.LastName).ToLower().Contains(searchLower) ||
+                r.Car.Location.ToLower().Contains(searchLower)
+            );
+        }
+
+        // Apply status filter
+        if (_selectedStatus.HasValue)
+        {
+            allRentals = allRentals.Where(r => r.Status == _selectedStatus.Value);
+        }
+
+        activeRentals = allRentals.ToList();
+        StateHasChanged();
     }
 }
 
@@ -436,9 +605,9 @@
         font-size: 0.875rem;
     }
 
-    .status-badge.active { background-color: #e8f8f5; color: #2ecc71; }
-    .status-badge.overdue { background-color: #fdedec; color: #e74c3c; }
-    .status-badge.due { background-color: #fff3e0; color: #f39c12; }
+    .status-badge.active { background-color: #b9f6e8; color: #2ecc71; }
+    .status-badge.ended { background-color: #ef817a; color: #e74c3c; }
+    .status-badge.pending-return { background-color: #efba65; color: #f39c12; }
 
     .payment-info {
         display: flex;
@@ -474,4 +643,58 @@
         align-items: center;
         justify-content: center;
     }
+    
+    .details-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .details-section {
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 1.5rem;
+    }
+
+    .details-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .details-grid {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .detail-row {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .label {
+        font-weight: 500;
+        min-width: 120px;
+        color: #64748b;
+    }
+
+    .vehicle-preview {
+        width: 120px;
+        height: 120px;
+        object-fit: contain;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .detail-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .modal-overlay-hidden {
+        visibility: hidden;
+        opacity: 0;
+        pointer-events: none;  /* Ensures no interactions can happen with hidden modal */
+    }
+
 </style>

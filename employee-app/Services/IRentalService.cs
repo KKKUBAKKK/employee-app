@@ -6,7 +6,7 @@ namespace employeeapp.Services;
 
 public interface IRentalService
 {
-    Task<IEnumerable<RentalDto>> GetAllRentals(RentalFilterDto? filter = null);
+    Task<IEnumerable<RentalDetailsDto>> GetAllRentals(RentalFilterDto? filter = null);
     Task<IEnumerable<RentalDto>> GetPendingReturns();
     Task<ReturnRecordDto> CompleteReturn(ReturnRecordDto returnRecord);
     Task<List<RentalHistoryDto>> GetVehicleRentalHistory(int vehicleId);
