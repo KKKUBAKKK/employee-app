@@ -339,7 +339,9 @@
         await RentalService.CompleteReturn(returnDto);
         
         ClearSelection();
-        await JSRuntime.InvokeVoidAsync("refreshPage");
+        await OnInitializedAsync();
+        StateHasChanged();
+        // await JSRuntime.InvokeVoidAsync("refreshPage");
     }
 
     public class RentalReturnInfo
