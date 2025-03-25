@@ -1,9 +1,9 @@
 # Employee App
 
-## Link to deployed employee app
+## Link to deployed employee app [ CURRENTLY PAUSED ]
 [Employee App](employee-app-eegsgzadcefrbfak.polandcentral-01.azurewebsites.net)
 
-## Link to deplyed customer app (another project)
+## Link to deplyed customer app (another project) [ CURRENTLY PAUSED ]
 [Customer App](http://molczane.github.io)
 
 ## Objective
